@@ -1,0 +1,8 @@
+Problem: An Office Stationery & Pantry Inventory Management System to replace manual stock records and spreadsheets. Track incoming stock, staff requests, items issued, stock balances, and low-stock alerts in one system.
+For: Admin staff, office assistants. Admin manages inventory, while employees request stationery and pantry supplies.
+Core things to track: Item name, category (Stationery/Pantry), item code, unit, opening stock, stock received, stock issued, current balance, minimum stock level, expiry date (pantry), supplier, unit price, stock location, requestor, department, and transaction date.
+The one workflow (must work v1): Admin registers inventory items, records stock received and issued, and the system automatically updates stock balances and highlights items below minimum stock levels.
+Success in a week: All stationery and pantry items are recorded, stock balances are accurate, staff can request supplies, admin can track usage, and low-stock items appear on a reorder list.
+Deliberately NOT in v1: simple web-based inventory system with stock tracking, requests, and reports.
+Who will actually use this: Office administration team and employees who request office stationery and pantry supplies.
+What it replaces or earns: Replaces manual stock books, Excel inventory tracking, and WhatsApp stock requests. Reduces stock shortages, duplicate purchases, wastage, and time spent preparing monthly inventory reports.

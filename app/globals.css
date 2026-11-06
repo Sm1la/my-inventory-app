@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+.auth-status{display:flex;align-items:center;gap:10px;margin-left:auto;margin-right:15px}.auth-status>span{max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:10px;white-space:nowrap}@media(max-width:600px){.auth-status>span{display:none}.auth-status{margin-right:8px}.auth-status .button{font-size:10px;padding:7px 9px}}
+
 .report-select{display:flex;align-items:center;gap:9px;font-size:11px;color:#667a68}.report-caption{padding:14px 23px;font-size:10px;line-height:1.7;color:#7e8f79;border-top:1px solid #e4e9e5}.report-select select{min-width:140px}
 
 .approval-guide{display:flex;flex-direction:column;gap:7px;padding:17px 23px;border-top:1px solid #e4e9e5;background:#f5f8f1;font-size:11px;color:#526c51}.approval-guide span{font-size:10px;color:#7e8f79;line-height:1.7}.approver-name{display:inline-block;background:#eef3e8;border-radius:5px;padding:6px 9px;color:#526d48;font-weight:600}.approval-comment{max-width:200px;white-space:normal;line-height:1.6}.approval-request{padding:16px;background:#f5f8f0;border-radius:7px;display:flex;flex-direction:column;gap:8px;font-size:13px}.approval-request span{color:#7b8c72;font-size:11px}

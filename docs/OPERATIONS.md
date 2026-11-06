@@ -15,6 +15,10 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 ## Demo access model
 
+The SPB-style login page is at `/login`, with Supabase email/password sign-in, Show/Hide password, `/signup`, `/forgot-password` and `/reset-password`. The inventory header links to sign-in and shows the signed-in email and sign-out control. These authenticate an account; they do not yet replace the demo workspace access model below or verify approver identity.
+
+Email confirmation and recovery use PKCE via `/auth/callback`. Supabase Auth URL Configuration must allow `https://my-inventory-app-smoky-three.vercel.app/auth/callback` and `https://my-inventory-app-smoky-three.vercel.app/auth/callback?next=/reset-password`. A working Supabase email sender is required for confirmation and reset emails. No test credentials are embedded in the app. IT Support displays contact guidance without inventing a support mailbox.
+
 There is no login wall in this version, as required by AGENTS.md. The browser generates a random workspace UUID, stores it under `office-stock-workspace-v1`, and sends it in `x-workspace-id`. Supabase row-level security limits every table and balance view to that workspace. A workspace identifier acts as a capability: do not share it. Clearing browser storage starts a new demo workspace. Different browsers do not share inventory.
 
 Use sample data only. Shared employee inventory requires a later authentication and role-based authorization sprint. Do not use this demo for real staff records. No service-role key is used in the browser or required by this implementation.

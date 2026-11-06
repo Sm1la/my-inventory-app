@@ -13,7 +13,7 @@ This project implements the office stationery and pantry workflow in PRD.md.
 - Reorder list includes items at or below their minimum level. Suggested orders target twice the minimum.
 - Inventory and Reorder list have a Create form: stock below 3 button. It refreshes all qualifying balances from Supabase and generates a printable replenishment form addressed to sharmila@selangorproperties.com.my. Exactly 3 is excluded, regardless of the screen's search or category. Suggested quantities restore the greater of 3 or the item's minimum and can be edited. Downloading the HTML form does not place an order, alter stock or send email. As requested, this feature creates the form only; it does not send email.
 - Reports shows an inventory table selected by All inventory, Stationery or Pantry, with opening, received, issued, current balance, minimum, status, location, supplier, price, value and expiry. Its summary and CSV export follow the selected category and search. This is a current stock snapshot using the complete ledger.
-- Transactions retains date filters and CSV export for stock movement history. History loads the newest 5,000 records.
+- Transactions shows a received/issued bar graph grouped by month or day, totals by transaction count, and the detailed movement table. Graph, totals, table and CSV follow the same date and search filters (including item codes). The graph counts transactions instead of combining incompatible stock units. Only periods with activity are plotted; no data displays an empty state. History loads the newest 5,000 records.
 - Deleting a demo item deletes its associated requests and movements after confirmation. Export first if required. Opening stock is locked after the first movement.
 
 ## Demo access model

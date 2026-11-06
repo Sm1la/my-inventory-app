@@ -8,7 +8,7 @@ type SupplyRequest = { id: string; item_id: string; quantity: number; requestor:
 type Tab = "Inventory" | "Requests" | "Approvals" | "Transactions" | "Reorder list" | "Reports";
 type Modal = { type: "item"; item?: Item } | { type: "received" | "issued" | "request"; item?: Item } | { type: "delete"; item: Item } | { type: "approval"; request: SupplyRequest; decision: "Approved" | "Rejected"; item?: Item } | null;
 const APPROVERS = ["Maznah", "Ira", "Mila"] as const;
-const DEPARTMENTS = ["Corporate", "Finance", "HR & Admin", "Project", "Credit Control", "Investment Property", "IT Department", "Philanthropist"] as const;
+const DEPARTMENTS = ["MD's Office", "CEO Office", "Finance", "Kayin Holdings Sdn Bhd", "Credit Control", "HR & Admin", "Investment Property", "IT Department"] as const;
 const money = (v: number) => new Intl.NumberFormat("en-MY", { style: "currency", currency: "MYR" }).format(v);
 const date = (v: string) => new Date(v.length === 10 ? v + "T00:00:00" : v).toLocaleDateString("en-MY", { day: "numeric", month: "short", year: "numeric" });
 const today = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kuala_Lumpur" });

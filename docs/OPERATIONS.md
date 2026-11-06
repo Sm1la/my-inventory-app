@@ -6,7 +6,7 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 - Add or edit an inventory item, including its opening balance, minimum level, supplier, price, expiry and location.
 - Receive stock to increase its balance. Issue stock to decrease it. Overselling is rejected by the database.
-- Department dropdowns in supply requests and stock receipts/issues list Corporate, Finance, HR & Admin, Project, Credit Control, Investment Property, IT Department and Philanthropist. Department is required for requests and issues, optional for receipts. Existing department values in saved records are preserved.
+- Department dropdowns in supply requests and stock receipts/issues list MD's Office, CEO Office, Finance, Kayin Holdings Sdn Bhd, Credit Control, HR & Admin, Investment Property and IT Department, in that order. Department is required for requests and issues, optional for receipts. Existing department values in saved records are preserved.
 - Create a supply request and assign Maznah, Ira or Mila. In Approvals, filter by assigned name, approve with optional comments or reject with a required reason. The decision name and date are saved. Approval leaves stock unchanged; only an Approved request can be fulfilled, which deducts stock atomically. Completed decisions cannot be changed.
 - Reorder list includes items at or below their minimum level. Suggested orders target twice the minimum.
 - Reports shows an inventory table selected by All inventory, Stationery or Pantry, with opening, received, issued, current balance, minimum, status, location, supplier, price, value and expiry. Its summary and CSV export follow the selected category and search. This is a current stock snapshot using the complete ledger.

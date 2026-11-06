@@ -6,7 +6,7 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 - Add or edit an inventory item, including its opening balance, minimum level, supplier, price, expiry and location.
 - Receive stock to increase its balance. Issue stock to decrease it. Overselling is rejected by the database.
-- Create a supply request. Fulfil deducts the quantity in the same database transaction; Reject does not change stock.
+- Create a supply request and assign Maznah, Ira or Mila. In Approvals, filter by assigned name, approve with optional comments or reject with a required reason. The decision name and date are saved. Approval leaves stock unchanged; only an Approved request can be fulfilled, which deducts stock atomically. Completed decisions cannot be changed.
 - Reorder list includes items at or below their minimum level. Suggested orders target twice the minimum.
 - Reports and Transactions support date filters and CSV export. Exports apply the current search and filters. History loads the newest 5,000 records; item balances use the complete ledger.
 - Deleting a demo item deletes its associated requests and movements after confirmation. Export first if required. Opening stock is locked after the first movement.
@@ -17,9 +17,13 @@ There is no login wall in this version, as required by AGENTS.md. The browser ge
 
 Use sample data only. Shared employee inventory requires a later authentication and role-based authorization sprint. Do not use this demo for real staff records. No service-role key is used in the browser or required by this implementation.
 
+The approver names are recorded workflow labels, not verified identities. Anyone with access to a demo workspace can select its assigned approver name; real approver-only access requires authenticated staff accounts. Existing pending requests remain intact and unassigned until a named decision is recorded.
+
 ## Database
 
 `docs/database.sql` records the `create_inventory_demo` migration applied to the existing Supabase project. It creates four tables, a security-invoker balance view, a stock validation trigger, an opening-stock protection trigger, and atomic request fulfilment. No existing tables or data were removed.
+
+`docs/approvals.sql` records the additive `add_named_supply_approvals` migration. It adds named assignment and decision fields, an Approved status, a named-decision RPC, and a trigger that prevents issuing unapproved requests even through direct status updates. Run `tests/approvals.sql` as one transaction for the approval integration suite; its rows are rolled back.
 
 Balance = opening stock + receipts - issues. The item row is locked while each movement is validated, preventing concurrent over-issuance. Movements are append-only through the public API. Workspace policies, check constraints and foreign keys apply to direct API access as well as the UI.
 

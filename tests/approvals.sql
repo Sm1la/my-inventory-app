@@ -1,0 +1,44 @@
+-- Run as a single query. All test rows are discarded by ROLLBACK.
+begin;
+set local role anon;
+select set_config('request.headers',json_build_object('x-workspace-id',gen_random_uuid())::text,true);
+select public.initialize_inventory_demo();
+do $$
+declare i uuid; r uuid; rejected uuid; too_large uuid; legacy uuid;
+begin
+ select id into i from public.inventory_items where code='ST-001';
+ insert into public.supply_requests(item_id,quantity,requestor,department,assigned_approver) values(i,3,'Demo test','QA','Maznah') returning id into r;
+ begin perform public.resolve_supply_request(r,'Fulfilled'); raise exception 'Unapproved request fulfilled';
+ exception when others then if sqlerrm<>'Request must be approved before fulfilment' then raise; end if; end;
+ begin update public.supply_requests set status='Fulfilled' where id=r; raise exception 'Direct bypass allowed';
+ exception when others then if sqlerrm not like 'Request must be approved before fulfilment%' then raise; end if; end;
+ begin perform public.record_supply_approval(r,'Approved','Ira','Wrong assignee'); raise exception 'Wrong approver accepted';
+ exception when others then if sqlerrm<>'Decision must be recorded under the assigned approver name' then raise; end if; end;
+ perform public.record_supply_approval(r,'Approved','Maznah','Approved for demo use');
+ if (select balance from public.inventory_balances where id=i)<>24 then raise exception 'Approval deducted stock'; end if;
+ if not exists(select 1 from public.supply_requests where id=r and status='Approved' and decided_by='Maznah' and decided_at is not null and approval_note='Approved for demo use') then raise exception 'Approval audit missing'; end if;
+ begin perform public.record_supply_approval(r,'Approved','Maznah','Repeat'); raise exception 'Duplicate approval allowed';
+ exception when others then if sqlerrm<>'Request already has an approval decision' then raise; end if; end;
+ perform public.resolve_supply_request(r,'Fulfilled');
+ if (select balance from public.inventory_balances where id=i)<>21 then raise exception 'Fulfilment stock wrong'; end if;
+ begin perform public.resolve_supply_request(r,'Fulfilled'); raise exception 'Duplicate issue allowed';
+ exception when others then if sqlerrm<>'Request must be approved before fulfilment' then raise; end if; end;
+ insert into public.supply_requests(item_id,quantity,requestor,department,assigned_approver) values(i,2,'Demo test','QA','Ira') returning id into rejected;
+ begin perform public.record_supply_approval(rejected,'Rejected','Ira',''); raise exception 'Empty rejection reason allowed';
+ exception when others then if sqlerrm<>'Enter a rejection reason' then raise; end if; end;
+ perform public.record_supply_approval(rejected,'Rejected','Ira','Duplicate request');
+ if (select balance from public.inventory_balances where id=i)<>21 then raise exception 'Rejection deducted stock'; end if;
+ insert into public.supply_requests(item_id,quantity,requestor,department,assigned_approver) values(i,100000,'Demo test','QA','Mila') returning id into too_large;
+ perform public.record_supply_approval(too_large,'Approved','Mila','Demo');
+ begin perform public.resolve_supply_request(too_large,'Fulfilled'); raise exception 'Oversell allowed';
+ exception when others then if sqlerrm not like 'Not enough stock%' then raise; end if; end;
+ if (select status from public.supply_requests where id=too_large)<>'Approved' then raise exception 'Failed issue changed status'; end if;
+ insert into public.supply_requests(item_id,quantity,requestor,department) values(i,1,'Legacy demo','QA') returning id into legacy;
+ perform public.record_supply_approval(legacy,'Approved','Mila','Existing unassigned request');
+ if (select assigned_approver from public.supply_requests where id=legacy)<>'Mila' then raise exception 'Legacy assignment failed'; end if;
+ perform set_config('request.headers',json_build_object('x-workspace-id',gen_random_uuid())::text,true);
+ begin perform public.record_supply_approval(legacy,'Approved','Mila','Cross-workspace'); raise exception 'Cross-workspace approval allowed';
+ exception when others then if sqlerrm<>'Request not found' then raise; end if; end;
+end $$;
+select 'PASS: named decisions, assignee validation, approval gate, audit, duplicate prevention, rejection, oversell rollback, legacy requests, workspace isolation' as result;
+rollback;

@@ -4,7 +4,7 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 ## Using the app
 
-- Add or edit an inventory item, including its opening balance, minimum level, supplier, price, expiry and location.
+- Add or edit an inventory item, including its opening balance, minimum level, supplier, price, expiry and location. Brand is available for both categories; pantry items have a Weight field (for example, 500 g or 1 kg), and stationery items have a positive whole-number Units per box field. These optional details appear in item rows, inventory reports, CSV exports and replenishment forms. Units per box is packaging information; it does not convert stock balances automatically.
 - Receive stock to increase its balance. Issue stock to decrease it. Overselling is rejected by the database.
 - Department dropdowns in supply requests and stock receipts/issues list MD's Office, CEO Office, Finance, Kayin Holdings Sdn Bhd, Credit Control, HR & Admin, Investment Property and IT Department, in that order. Department is required for requests and issues, optional for receipts. Existing department values in saved records are preserved.
 - Create a supply request and assign Maznah, Ira or Mila. In Approvals, filter by assigned name, approve with optional comments or reject with a required reason. The decision name and date are saved. Approval leaves stock unchanged; only an Approved request can be fulfilled, which deducts stock atomically. Completed decisions cannot be changed.
@@ -33,6 +33,8 @@ The approver names are recorded workflow labels, not verified identities. Anyone
 `docs/database.sql` records the `create_inventory_demo` migration applied to the existing Supabase project. It creates four tables, a security-invoker balance view, a stock validation trigger, an opening-stock protection trigger, and atomic request fulfilment. No existing tables or data were removed.
 
 `docs/approvals.sql` records the additive `add_named_supply_approvals` migration. It adds named assignment and decision fields, an Approved status, a named-decision RPC, and a trigger that prevents issuing unapproved requests even through direct status updates. Run `tests/approvals.sql` as one transaction for the approval integration suite; its rows are rolled back.
+
+`docs/item-packaging.sql` records the additive `add_item_brand_weight_units_per_box` migration. It adds brand, weight and units-per-box columns, appends them to the security-invoker balance view and preserves existing balances and RLS policies.
 
 Balance = opening stock + receipts - issues. The item row is locked while each movement is validated, preventing concurrent over-issuance. Movements are append-only through the public API. Workspace policies, check constraints and foreign keys apply to direct API access as well as the UI.
 

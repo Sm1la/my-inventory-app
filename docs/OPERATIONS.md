@@ -4,6 +4,8 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 ## Using the app
 
+- Inventory has Stationery and Pantry submenu buttons. Selecting one filters the item list, updates the heading and defaults new items to that category. Clicking Inventory shows all categories.
+
 - Add or edit an inventory item, including its opening balance, minimum level, supplier, price, expiry and location. Brand is available for both categories; pantry items have a Weight field (for example, 500 g or 1 kg), and stationery items have a positive whole-number Units per box field. These optional details appear in item rows, inventory reports, CSV exports and replenishment forms. Units per box is packaging information; it does not convert stock balances automatically.
 - Receive stock to increase its balance. Issue stock to decrease it. Overselling is rejected by the database.
 - Department dropdowns in supply requests and stock receipts/issues list MD's Office, CEO Office, Finance, Kayin Holdings Sdn Bhd, Credit Control, HR & Admin, Investment Property and IT Department, in that order. Department is required for requests and issues, optional for receipts. Existing department values in saved records are preserved.

@@ -8,7 +8,8 @@ This project implements the office stationery and pantry workflow in PRD.md.
 - Receive stock to increase its balance. Issue stock to decrease it. Overselling is rejected by the database.
 - Create a supply request and assign Maznah, Ira or Mila. In Approvals, filter by assigned name, approve with optional comments or reject with a required reason. The decision name and date are saved. Approval leaves stock unchanged; only an Approved request can be fulfilled, which deducts stock atomically. Completed decisions cannot be changed.
 - Reorder list includes items at or below their minimum level. Suggested orders target twice the minimum.
-- Reports and Transactions support date filters and CSV export. Exports apply the current search and filters. History loads the newest 5,000 records; item balances use the complete ledger.
+- Reports shows an inventory table selected by All inventory, Stationery or Pantry, with opening, received, issued, current balance, minimum, status, location, supplier, price, value and expiry. Its summary and CSV export follow the selected category and search. This is a current stock snapshot using the complete ledger.
+- Transactions retains date filters and CSV export for stock movement history. History loads the newest 5,000 records.
 - Deleting a demo item deletes its associated requests and movements after confirmation. Export first if required. Opening stock is locked after the first movement.
 
 ## Demo access model

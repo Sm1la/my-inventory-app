@@ -7,6 +7,11 @@ export default function AuthStatus() {
   const [email,setEmail] = useState<string | null>(null);
   const [busy,setBusy] = useState(false), [error,setError] = useState("");
   useEffect(() => {
+    const query=new URLSearchParams(window.location.search), hash=new URLSearchParams(window.location.hash.slice(1));
+    if (query.get("error") || query.get("error_code") || hash.get("error")) {
+      window.location.replace("/login?error=confirmation-return");
+      return;
+    }
     const client=createClient();
     const {data:{subscription}}=client.auth.onAuthStateChange((_event,session)=>setEmail(session?.user.email || null));
     return ()=>subscription.unsubscribe();

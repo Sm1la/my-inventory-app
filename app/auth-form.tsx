@@ -5,6 +5,9 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import styles from "./auth.module.css";
 
+const DOMAIN_VERIFICATION_MESSAGE = "Kindly email your ID to sharmila@selangorproperties.com.my for verification";
+const isCompanyEmail = (email: string) => /^[^@\s]+@selangorproperties\.com\.my$/i.test(email.trim());
+
 type Mode = "login" | "signup" | "forgot" | "reset" | "verify";
 export default function AuthForm({ mode }: { mode: Mode }) {
   const [showPassword,setShowPassword] = useState(false);
@@ -30,7 +33,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     const form = new FormData(event.currentTarget);
     const email = String(form.get("email") || "").trim();
     const password = String(form.get("password") || "");
-    if (mode === "signup" && !/^[^@\s]+@selangorproperties\.com\.my$/i.test(email)) { setError("Registration is only available for @selangorproperties.com.my email addresses."); setMessage(""); return; }
+    if (mode === "signup" && !isCompanyEmail(email)) { setError(DOMAIN_VERIFICATION_MESSAGE); setMessage(""); return; }
     if ((mode === "signup" || mode === "reset") && password !== String(form.get("confirmPassword") || "")) { setError("The passwords do not match."); return; }
     lock.current=true; setBusy(true); setError(""); setMessage("");
     try {
@@ -68,9 +71,9 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     <h1 id="auth-title" className={styles.title}>{mode === "verify" ? "Resend confirmation email" : mode === "signup" ? "Create your account" : mode === "forgot" ? "Forgot password?" : mode === "reset" ? "Set a new password" : "Office Inventory Management"}</h1>
     <p className={styles.company}>Selangor Properties Sdn. Bhd.</p>
     <p className={styles.intro}>{mode === "verify" ? "Enter your account email to receive a fresh confirmation link." : mode === "login" ? "Sign in to manage stationery and pantry supplies." : mode === "signup" ? "Register with your @selangorproperties.com.my work email." : mode === "forgot" ? "Enter your email address to receive a reset link." : "Choose a strong password for your account."}</p>
-    {error && <div role="alert" className={styles.error}>{error}</div>}{message && <div role="status" className={styles.success}>{message}</div>}
+    {error && <div role="alert" className={styles.error}><span className={error === DOMAIN_VERIFICATION_MESSAGE ? styles.domainNotice : undefined}>{error}</span></div>}{message && <div role="status" className={styles.success}>{message}</div>}
     <form onSubmit={submit} className={styles.form}>
-      {mode !== "reset" && <label className={styles.field}><span>Username</span><input type="email" name="email" autoComplete="username" placeholder={mode === "signup" ? "name@selangorproperties.com.my" : "Email address"} required maxLength={254} disabled={busy}/></label>}
+      {mode !== "reset" && <label className={styles.field}><span>Username</span><input type="email" name="email" autoComplete="username" placeholder={mode === "signup" ? "name@selangorproperties.com.my" : "Email address"} required maxLength={254} disabled={busy} onBlur={event => { if (mode === "signup" && event.target.value.trim() && !isCompanyEmail(event.target.value)) { setError(DOMAIN_VERIFICATION_MESSAGE); setMessage(""); } }} onChange={() => { if (error === DOMAIN_VERIFICATION_MESSAGE) setError(""); }}/></label>}
       {hasPassword && <label className={styles.field}><span>{mode === "reset" ? "New password" : "Password"}</span><div className={styles.password}><input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} required minLength={mode === "login" ? 1 : 8} maxLength={128} disabled={busy}/><button type="button" aria-controls="password" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword(v=>!v)}>{showPassword ? "Hide" : "Show"}</button></div></label>}
       {(mode === "signup" || mode === "reset") && <><label className={styles.field}><span>Confirm password</span><input type={showPassword ? "text" : "password"} name="confirmPassword" autoComplete="new-password" required minLength={8} maxLength={128} disabled={busy}/></label><p className={styles.hint}>Use at least 8 characters.</p></>}
       {mode === "login" && <Link className={styles.forgot} href="/forgot-password">Forgot password?</Link>}

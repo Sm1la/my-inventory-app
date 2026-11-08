@@ -1,4 +1,4 @@
-create function public.restrict_inventory_signup_domain(event jsonb)
+create or replace function public.restrict_inventory_signup_domain(event jsonb)
 returns jsonb language sql immutable security invoker set search_path = ''
 as $$
   select case
@@ -6,7 +6,7 @@ as $$
     then '{}'::jsonb
     else jsonb_build_object('error',jsonb_build_object(
       'http_code',403,
-      'message','Registration is only available for @selangorproperties.com.my email addresses.'
+      'message','Kindly email your ID to sharmila@selangorproperties.com.my for verification'
     ))
   end
 $$;

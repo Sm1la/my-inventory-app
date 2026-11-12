@@ -1,0 +1,21 @@
+const fs = require('fs'), ts = require('typescript'), assert = require('node:assert/strict');
+function load(path, deps={}) { const mod={exports:{}}; const code=ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText; new Function('exports','require',code)(mod.exports,key=>deps[key] ?? require(key)); return mod.exports; }
+const colours=load('lib/stationery-colours.ts');
+assert.equal(colours.stationeryType({name:'A4 Copy Paper (80gsm)',category:'Stationery'}),'Paper');
+assert.equal(colours.stationeryType({name:'Paper Clips',category:'Stationery'}),'');
+assert.equal(colours.stationeryType({name:'Black Ballpoint Pens',category:'Stationery'}),'Ball pen');
+assert.equal(colours.stationeryType({name:'Whiteboard Markers (Assorted)',category:'Stationery'}),'Marker pen');
+assert.equal(colours.stationeryType({name:'Paper cup',category:'Pantry'}),'');
+for(const kind of Object.keys(colours.COLOURS)) for(const colour of colours.COLOURS[kind].filter(v=>v!=='Other')) assert.equal(colours.validateColour(kind,colour,true),colour);
+assert.equal(colours.validateColour('Paper','Pink',true),'Pink');
+assert.equal(colours.validateColour('Marker pen','Purple',true),'Purple');
+assert.throws(()=>colours.validateColour('Ball pen','Green',true));
+assert.throws(()=>colours.validateColour('Paper','Other',true));
+assert.throws(()=>colours.validateColour('Paper','',true));
+const {readRequestLines}=load('lib/request-lines.ts',{'./stationery-colours':colours});
+const items=[{id:'paper',name:'A4 Paper',category:'Stationery'}];
+assert.equal(readRequestLines(JSON.stringify([{item_id:'paper',quantity:2,requested_colour:'Green'}]),items,true)[0].requested_colour,'Green');
+assert.throws(()=>readRequestLines(JSON.stringify([{item_id:'paper',quantity:2}]),items,true));
+assert.equal(readRequestLines(JSON.stringify([{item_id:'paper',quantity:2}]),items)[0].quantity,2);
+assert.equal(readRequestLines(JSON.stringify([{item_id:null,quantity:1,other_name:'Marker pen',other_category:'Stationery',requested_colour:'Purple'}]),items,true)[0].requested_colour,'Purple');
+console.log('Stationery colour option and request validation checks passed');

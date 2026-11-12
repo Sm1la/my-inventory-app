@@ -4,6 +4,8 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 ## Using the app
 
+- Stationery item forms offer a Stationery type and Colour selection: Paper (Blue, Green, Yellow, Red, Other), Ball pen (Black, Blue, Red), Marker pen (Black, Red, Blue, Green, Other). Other opens a required custom colour field. Existing paper/ballpoint/marker names are recognized automatically; Paper Clips are excluded. Saved colour appears in inventory, receipts, reports, exports and replenishment forms. In New request, tick an applicable item and choose its required requested colour; saved item colours or colours named in existing pens prefill it. Unlisted Other items can also specify a colour. Requested colour is saved separately on each request, shown to approvers, protected against later edits, copied into issue notes on fulfilment and prefilled when converting an unlisted request to inventory. Balances remain per inventory item; colour preferences do not create separate stock balances or change existing quantities.
+
 - The Total items summary shows separate Stationery and Pantry item-type counts from the full loaded inventory, independent of list filters. These count inventory entries, not stock units.
 
 - Supply requests automatically use the signed-in account’s profile name (or login email if no name is saved). The requestor field is read-only while signed in, and submission rechecks the current account before saving the same requestor on every selected line. Anonymous demo requests retain a manual name field.
@@ -74,3 +76,5 @@ Balance = opening stock + receipts - issues. The item row is locked while each m
 - Browser against live Supabase: create item with opening 10, receive 5, issue 3, fulfil request for 2, verify final balance 10; export report CSV; delete disposable test item and its history.
 
 `docs/batch-approvals.sql` records the verified batch approval RPC and updated decision trigger. `tests/batch-approvals.sql` tests atomic decisions, assignment independence, identity, unauthorized access and stock preservation in a rolled-back transaction.
+
+`docs/stationery-colours.sql` records optional item colour metadata, requested colour and the compatible view/trigger/RPC updates. Colour verification uses `tests/stationery-colours.cjs` and rolled-back `tests/stationery-colours.sql`.

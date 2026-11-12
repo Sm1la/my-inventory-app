@@ -4,6 +4,8 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 ## Using the app
 
+- The Total items summary shows separate Stationery and Pantry item-type counts from the full loaded inventory, independent of list filters. These count inventory entries, not stock units.
+
 - Supply requests automatically use the signed-in account’s profile name (or login email if no name is saved). The requestor field is read-only while signed in, and submission rechecks the current account before saving the same requestor on every selected line. Anonymous demo requests retain a manual name field.
 
 - Inventory has Stationery and Pantry submenu buttons. Selecting one filters the item list, updates the heading and defaults new items to that category. Clicking Inventory shows all categories.

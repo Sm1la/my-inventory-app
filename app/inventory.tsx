@@ -25,6 +25,7 @@ function exportCSV(name: string, rows: (string | number)[][]) {
 export default function Inventory() {
   const [db, setDb] = useState<SupabaseClient | null>(null);
   const [managerName, setManagerName] = useState<string | null>(null);
+  const [accountInventory,setAccountInventory] = useState(false);
   const [items, setItems] = useState<Item[]>([]), [movements, setMovements] = useState<Movement[]>([]), [requests, setRequests] = useState<SupplyRequest[]>([]);
   const [tab, setTab] = useState<Tab>("Inventory"), [search, setSearch] = useState(""), [category, setCategory] = useState("All categories");
   const [loading, setLoading] = useState(true), [busy, setBusy] = useState(false), [error, setError] = useState(""), [notice, setNotice] = useState(""), [modal, setModal] = useState<Modal>(null);
@@ -38,7 +39,9 @@ export default function Inventory() {
   const [otherCategory,setOtherCategory] = useState("Stationery");
   const dialog = useRef<HTMLDialogElement>(null), submitting = useRef(false);
   async function load(client: SupabaseClient) {
-    const access = await client.rpc("inventory_access");
+    const [access,workspace] = await Promise.all([client.rpc("inventory_access"),client.rpc("account_inventory_workspace")]);
+    if (workspace.error) throw new Error(workspace.error.message);
+    setAccountInventory(!!workspace.data);
     if (access.error) { setManagerName(null); throw new Error(access.error.message); }
     setManagerName(access.data || null);
     async function rows(table: string, order: string, ascending: boolean, limit = Infinity) {
@@ -72,7 +75,7 @@ export default function Inventory() {
   }, []);
   useEffect(() => {
     const { data: { subscription } } = createClient().auth.onAuthStateChange(event => {
-      if (event === "SIGNED_OUT") { setManagerName(null); setModal(null); }
+      if (event === "SIGNED_OUT") { setManagerName(null); setAccountInventory(false); setModal(null); setItems([]); setMovements([]); setRequests([]); }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -125,9 +128,9 @@ export default function Inventory() {
   return <div className="shell">
     <aside className="sidebar"><a href="/" className="brand"><span className="brand-mark">▦</span><span>Office<span className="brand-light">Stock</span><small>INVENTORY WORKSPACE</small></span></a><p className="nav-label">WORKSPACE</p>
       <nav aria-label="Main navigation">{(["Inventory","Requests","Approvals","Transactions","Reorder list","Reports"] as Tab[]).map((name,n) => <div key={name} className="nav-group"><button className={tab === name ? "nav active" : "nav"} onClick={() => { setTab(name); setSearch(""); if (name === "Inventory") setCategory("All categories"); if (name === "Requests") setRequestCategory("All categories"); if (name === "Reorder list") setReorderCategory("All categories"); setRequestFilter(name === "Approvals" ? "Pending" : "All statuses"); }} aria-current={tab === name && (name !== "Inventory" || category === "All categories") && (name !== "Requests" || requestCategory === "All categories") && (name !== "Reorder list" || reorderCategory === "All categories") ? "page" : undefined}><span className="nav-icon">{["▦","☷","✓","⇄","◷","▤"][n]}</span>{name}{(name === "Requests" || name === "Approvals") && pending.length > 0 && <b>{pending.length}</b>}{name === "Reorder list" && reorderCount > 0 && <b>{reorderCount}</b>}</button>{(name === "Inventory" || name === "Requests" || name === "Reorder list") && <div className="inventory-subnav" role="group" aria-label={name + " categories"}>{["Stationery","Pantry"].map(itemCategory => <button key={itemCategory} className={tab === name && (name === "Inventory" ? category : name === "Requests" ? requestCategory : reorderCategory) === itemCategory ? "nav subnav active" : "nav subnav"} aria-current={tab === name && (name === "Inventory" ? category : name === "Requests" ? requestCategory : reorderCategory) === itemCategory ? "page" : undefined} onClick={() => { setTab(name); if (name === "Inventory") setCategory(itemCategory); else if (name === "Reorder list") setReorderCategory(itemCategory); else { setRequestCategory(itemCategory); setRequestFilter("All statuses"); } setSearch(""); }}>{itemCategory}</button>)}</div>}</div>)}</nav>
-      <div className="sidebar-note"><span className="dot"/>{db ? "Connected to Supabase" : "Connecting…"}<p>Changes save to your demo workspace.</p></div><div className="profile"><span className="avatar">OA</span><div>Office administration<small>Stationery & pantry</small></div></div>
+      <div className="sidebar-note"><span className="dot"/>{db ? "Connected to Supabase" : "Connecting…"}<p>{accountInventory ? "Your saved inventory follows your sign-in across browsers." : "This browser has its own workspace. Sign in to open your linked inventory."}</p></div><div className="profile"><span className="avatar">OA</span><div>Office administration<small>Stationery & pantry</small></div></div>
     </aside>
-    <div className="main-area"><header className="topbar"><div className="breadcrumb">Workspace <span>/</span> <strong>{tab}{tab === "Inventory" && category !== "All categories" ? " / " + category : tab === "Requests" && requestCategory !== "All categories" ? " / " + requestCategory : tab === "Reorder list" && reorderCategory !== "All categories" ? " / " + reorderCategory : ""}</strong></div><AuthStatus/><span className="demo-badge">DEMO WORKSPACE</span></header><main>
+    <div className="main-area"><header className="topbar"><div className="breadcrumb">Workspace <span>/</span> <strong>{tab}{tab === "Inventory" && category !== "All categories" ? " / " + category : tab === "Requests" && requestCategory !== "All categories" ? " / " + requestCategory : tab === "Reorder list" && reorderCategory !== "All categories" ? " / " + reorderCategory : ""}</strong></div><AuthStatus/><span className="demo-badge">{accountInventory ? "ACCOUNT INVENTORY" : "BROWSER WORKSPACE"}</span></header><main>
       <div className="page-heading"><div><p className="eyebrow">OFFICE ESSENTIALS, UNDER CONTROL</p><h1>{tab === "Inventory" ? (category === "All categories" ? "Inventory overview" : category + " inventory") : tab === "Requests" && requestCategory !== "All categories" ? requestCategory + " requests" : tab === "Reorder list" && reorderCategory !== "All categories" ? reorderCategory + " reorder list" : tab}</h1><p className="subtitle">{tab === "Inventory" ? "A clear view of your stationery and pantry supplies." : tab === "Requests" ? "Assign an approver, track decisions, then issue approved supplies." : tab === "Approvals" ? "Review requests assigned to Maznah, Ira and Mila." : tab === "Reorder list" ? "Keep essential supplies from running out." : tab === "Reports" ? "Select Stationery or Pantry to view and export an inventory table." : "Review stock movements and export the records you need."}</p></div><div className="heading-actions"><button className="button" disabled={loading || busy} onClick={() => void refresh()}>↻ Refresh</button>{tab === "Reorder list" && <button className="button primary" disabled={disabled} onClick={() => open({ type: "request" })}>＋ Request supplies</button>}{(managerName || tab === "Requests" || tab === "Approvals") && <button className="button primary" disabled={disabled} onClick={() => open({ type: (tab === "Requests" || tab === "Approvals") ? "request" : "item" })}>＋ {(tab === "Requests" || tab === "Approvals") ? "New request" : "Add item"}</button>}</div></div>
       <div className="demo-note">{managerName ? `Signed in as ${managerName} · You can add, edit, delete and manage inventory stock.` : "View-only inventory · Only Maznah, Ira and Mila can add, edit, delete or manage stock. Sign in with an authorized account to make changes."}</div>
       {!modal && error && <div className="alert error" role="alert">{error}</div>}{notice && <div className="alert success" role="status">✓ {notice}</div>}

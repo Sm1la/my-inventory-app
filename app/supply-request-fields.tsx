@@ -4,10 +4,10 @@ import { useState, type ReactNode } from "react";
 import type { RequestLine } from "@/lib/request-lines";
 
 type RequestItem = { id: string; name: string; code: string; brand: string; category: string; balance: number; unit: string };
-type Props = { items: RequestItem[]; initialCategory: string; initialItemId?: string; approvers: readonly string[]; departments: readonly string[]; busy: boolean };
+type Props = { requestorIdentity: string | null; items: RequestItem[]; initialCategory: string; initialItemId?: string; approvers: readonly string[]; departments: readonly string[]; busy: boolean };
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="field"><span>{label}</span>{children}</label>; }
 
-export default function SupplyRequestFields({ items, initialCategory, initialItemId, approvers, departments, busy }: Props) {
+export default function SupplyRequestFields({ requestorIdentity, items, initialCategory, initialItemId, approvers, departments, busy }: Props) {
   const [category, setCategory] = useState(initialCategory);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Record<string, string>>(() => initialItemId ? { [initialItemId]: "1" } : {});
@@ -30,7 +30,7 @@ export default function SupplyRequestFields({ items, initialCategory, initialIte
   return <fieldset disabled={busy} className="request-fields">
     <input type="hidden" name="request_lines" value={JSON.stringify(lines)}/>
     <div className="request-picker-heading"><h3>Choose items</h3><span aria-live="polite">{lines.length} selected</span></div>
-    <p className="request-picker-help">Tick the boxes on the right and enter a quantity for each item. Choose the requestor, department and approver once below.</p>
+    <p className="request-picker-help">Tick the boxes on the right and enter a quantity for each item. Your signed-in account fills the requestor. Choose the department and approver once below.</p>
     <div className="request-picker-filters"><Field label="Category"><select value={category} onChange={event => setCategory(event.target.value)}><option>All categories</option><option>Stationery</option><option>Pantry</option></select></Field><Field label="Search items"><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Item name, code or brand"/></Field></div>
     <div className="request-pick-list" role="group" aria-label="Items to request">
       <div className="request-pick-labels"><span>Item / available stock</span><span>Qty</span><span>Tick</span></div>
@@ -45,6 +45,6 @@ export default function SupplyRequestFields({ items, initialCategory, initialIte
     {lines.length > 0 && <div className="request-selection-summary" aria-label="Selected items"><strong>Selected items</strong><ul>{selectedItems.map(item => <li key={item.id}>{item.name} × {selected[item.id] || "?"} <button type="button" aria-label={"Remove selected " + item.name} onClick={() => toggle(item.id, false)}>×</button></li>)}{other && <li>Other: {otherName || "enter item name below"} × {otherQuantity || "?"}</li>}</ul><small>Selections are kept when you change category or search.</small></div>}
     {other && <div className="form-grid request-other-details"><div className="full"><Field label="Other item name *"><input required maxLength={120} value={otherName} onChange={event => setOtherName(event.target.value)} placeholder="Enter the item you need"/></Field></div><Field label="Brand"><input maxLength={120} value={otherBrand} onChange={event => setOtherBrand(event.target.value)} placeholder="Enter brand, if known"/></Field><Field label="Other category *"><select value={otherCategory} onChange={event => setOtherCategory(event.target.value)}><option>Stationery</option><option>Pantry</option></select></Field><Field label="Other quantity *"><input type="number" min={1} max={10000000} step={1} required value={otherQuantity} onChange={event => setOtherQuantity(event.target.value)}/></Field></div>}
     <h3 className="request-shared-heading">Request details — applies to all selected items</h3>
-    <div className="form-grid"><Field label="Requestor *"><input name="requestor" required maxLength={120} placeholder="Your name"/></Field><Field label="Department *"><select name="department" required defaultValue=""><option value="" disabled>Select department</option>{departments.map(name => <option key={name}>{name}</option>)}</select></Field><div className="full"><Field label="Assigned approver *"><select name="assigned_approver" required defaultValue=""><option value="" disabled>Select approver</option>{approvers.map(name => <option key={name}>{name}</option>)}</select></Field></div><div className="full"><Field label="Notes"><textarea name="notes" rows={2} maxLength={500}/></Field></div></div>
+    <div className="form-grid"><Field label="Requestor *"><input key={requestorIdentity ?? "guest"} name="requestor" required maxLength={120} defaultValue={requestorIdentity ?? ""} readOnly={!!requestorIdentity} placeholder="Your name"/>{requestorIdentity && <small>Automatically set from your signed-in account.</small>}</Field><Field label="Department *"><select name="department" required defaultValue=""><option value="" disabled>Select department</option>{departments.map(name => <option key={name}>{name}</option>)}</select></Field><div className="full"><Field label="Assigned approver *"><select name="assigned_approver" required defaultValue=""><option value="" disabled>Select approver</option>{approvers.map(name => <option key={name}>{name}</option>)}</select></Field></div><div className="full"><Field label="Notes"><textarea name="notes" rows={2} maxLength={500}/></Field></div></div>
   </fieldset>;
 }

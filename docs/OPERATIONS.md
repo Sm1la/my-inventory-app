@@ -4,6 +4,8 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 ## Using the app
 
+- Supply requests automatically use the signed-in account’s profile name (or login email if no name is saved). The requestor field is read-only while signed in, and submission rechecks the current account before saving the same requestor on every selected line. Anonymous demo requests retain a manual name field.
+
 - Inventory has Stationery and Pantry submenu buttons. Selecting one filters the item list, updates the heading and defaults new items to that category. Clicking Inventory shows all categories.
 
 - Add or edit an inventory item, including its opening balance, minimum level, supplier, price, expiry and location. Brand is available for both categories; pantry items have a Weight field (for example, 500 g or 1 kg), and stationery items have a positive whole-number Units per box field. These optional details appear in item rows, inventory reports, CSV exports and replenishment forms. Units per box is packaging information; it does not convert stock balances automatically.

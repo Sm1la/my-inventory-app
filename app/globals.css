@@ -30,3 +30,5 @@ dialog.multi-request-dialog{width:min(820px,calc(100vw - 32px))}.request-fields{
 .colour-fields{display:flex;flex-direction:column;gap:10px}.request-pick-row .colour-fields{margin-top:10px;max-width:260px}.request-pick-row>div>label{display:block}.request-pick-row>div>label small{display:block}
 
 .brand-spb{display:block;width:48px;height:40px;flex:none}
+
+.user-management{max-width:1120px;margin:30px auto;padding:24px}.user-management>.page-heading{margin-top:30px}.user-help{color:var(--muted);line-height:1.7;margin-bottom:22px;max-width:800px}.user-show-password{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}

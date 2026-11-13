@@ -4,6 +4,8 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 ## Using the app
 
+- User management (/users) is available only to the verified, actively signed-in sharmila@selangorproperties.com.my account. The sidebar link and server-rendered page are guarded; the Supabase Edge Function independently verifies Auth and a live database session before using its built-in service credential. It supports company email IDs, full names, initial passwords, editing and password replacement, and soft deletion. Passwords are never returned, logged, stored in browser storage or written to app tables. The owner account cannot be edited/deleted here. Managed accounts are linked to the owner inventory during Auth creation. Public signup is blocked by the Auth hook; /signup directs staff to Sharmila. Password/email changes and deletions revoke target sessions; deleted/revoked sessions and anonymous headers cannot read a linked staff inventory. Existing inventory history is retained. No email is sent automatically.
+
 - The sidebar displays the same SPB logo used on the login page beside OfficeStock.
 
 - Stationery item forms offer a Stationery type and Colour selection: Paper (Blue, Green, Yellow, Red, Other), Ball pen (Black, Blue, Red), Marker pen (Black, Red, Blue, Green, Other). Other opens a required custom colour field. Existing paper/ballpoint/marker names are recognized automatically; Paper Clips are excluded. Saved colour appears in inventory, receipts, reports, exports and replenishment forms. In New request, tick an applicable item and choose its required requested colour; saved item colours or colours named in existing pens prefill it. Unlisted Other items can also specify a colour. Requested colour is saved separately on each request, shown to approvers, protected against later edits, copied into issue notes on fulfilment and prefilled when converting an unlisted request to inventory. Balances remain per inventory item; colour preferences do not create separate stock balances or change existing quantities.
@@ -80,3 +82,5 @@ Balance = opening stock + receipts - issues. The item row is locked while each m
 `docs/batch-approvals.sql` records the verified batch approval RPC and updated decision trigger. `tests/batch-approvals.sql` tests atomic decisions, assignment independence, identity, unauthorized access and stock preservation in a rolled-back transaction.
 
 `docs/stationery-colours.sql` records optional item colour metadata, requested colour and the compatible view/trigger/RPC updates. Colour verification uses `tests/stationery-colours.cjs` and rolled-back `tests/stationery-colours.sql`.
+
+User management sources: `docs/user-management.sql`, `supabase/functions/inventory-user-admin/`, `app/users/`. Edge Function uses pinned supabase-js 2.119.0 and runtime-provided credentials. Verify with `node tests/user-management.mjs`, `tests/user-management.sql`, typecheck/build and live owner/denied-access screens.

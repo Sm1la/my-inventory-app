@@ -17,3 +17,5 @@ f=fixture();response=await send(f,{action:'update',id:target.id,email:target.ema
 f=fixture();assert.equal((await send(f,{action:'delete',id:actor.id})).status,400);assert.equal(f.calls.length,0);
 assert.equal((await send(f,{action:'delete',id:target.id})).status,200);assert.deepEqual(f.calls.map(c=>c[0]),['rpc','update','delete']);assert.equal(f.calls[2][1],true);
 console.log('User management authentication, validation, CRUD, session revocation and owner protection checks passed');
+
+const preflight=await fixture().handler(new Request("https://example.test",{method:"OPTIONS",headers:{origin:"https://my-inventory-app-smoky-three.vercel.app","access-control-request-headers":"authorization,apikey,x-workspace-id"}}));assert.equal(preflight.status,204);assert.ok(preflight.headers.get("access-control-allow-headers").includes("x-workspace-id"));

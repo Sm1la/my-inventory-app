@@ -7,7 +7,7 @@ export function makeHandler({ userClient, adminClient }) {
   return async request => {
     const origin = request.headers.get("origin");
     const headers = { "Content-Type":"application/json", "Cache-Control":"no-store", "X-Content-Type-Options":"nosniff", "Vary":"Origin" };
-    if (origin && allowedOrigins.has(origin)) Object.assign(headers,{"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info","Access-Control-Allow-Methods":"POST, OPTIONS"});
+    if (origin && allowedOrigins.has(origin)) Object.assign(headers,{"Access-Control-Allow-Origin":origin,"Access-Control-Allow-Headers":"authorization, apikey, content-type, x-client-info, x-workspace-id, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version","Access-Control-Allow-Methods":"POST, OPTIONS"});
     const reply=(body,status=200)=>new Response(JSON.stringify(body),{status,headers});
     if (origin && !allowedOrigins.has(origin)) return reply({error:"Origin not allowed"},403);
     if (request.method==="OPTIONS") return new Response(null,{status:204,headers});

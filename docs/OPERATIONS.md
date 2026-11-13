@@ -4,6 +4,8 @@ This project implements the office stationery and pantry workflow in PRD.md.
 
 ## Using the app
 
+- The sidebar displays the same SPB logo used on the login page beside OfficeStock.
+
 - Stationery item forms offer a Stationery type and Colour selection: Paper (Blue, Green, Yellow, Red, Other), Ball pen (Black, Blue, Red), Marker pen (Black, Red, Blue, Green, Other). Other opens a required custom colour field. Existing paper/ballpoint/marker names are recognized automatically; Paper Clips are excluded. Saved colour appears in inventory, receipts, reports, exports and replenishment forms. In New request, tick an applicable item and choose its required requested colour; saved item colours or colours named in existing pens prefill it. Unlisted Other items can also specify a colour. Requested colour is saved separately on each request, shown to approvers, protected against later edits, copied into issue notes on fulfilment and prefilled when converting an unlisted request to inventory. Balances remain per inventory item; colour preferences do not create separate stock balances or change existing quantities.
 
 - The Total items summary shows separate Stationery and Pantry item-type counts from the full loaded inventory, independent of list filters. These count inventory entries, not stock units.

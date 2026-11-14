@@ -1,0 +1,13 @@
+const fs=require('fs'),ts=require('typescript'),assert=require('node:assert/strict');const mod={exports:{}};
+new Function('exports',ts.transpileModule(fs.readFileSync('lib/approval-quantities.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(mod.exports);
+const {readApprovalQuantities:read}=mod.exports,requests=[{id:'a',quantity:10},{id:'b',quantity:4}];
+const encode=(a,b)=>JSON.stringify([{request_id:'a',approved_quantity:a},{request_id:'b',approved_quantity:b}]);
+assert.deepEqual(read(encode('5','0'),requests,'Short of stock'),[{request_id:'a',approved_quantity:5},{request_id:'b',approved_quantity:0}]);
+assert.deepEqual(read(encode(10,4),requests,''),[{request_id:'a',approved_quantity:10},{request_id:'b',approved_quantity:4}]);
+for(const [a,b]of [[11,4],[-1,4],[1.5,4],['',4],[null,4],['Infinity',4]])assert.throws(()=>read(encode(a,b),requests,'Reason'));
+assert.throws(()=>read(encode(5,4),requests,' '));
+assert.throws(()=>read('[{"request_id":"a","approved_quantity":2},{"request_id":"a","approved_quantity":2}]',requests,'Reason'));
+assert.throws(()=>read('[{"request_id":"other","approved_quantity":2},{"request_id":"b","approved_quantity":2}]',requests,'Reason'));
+assert.throws(()=>read('[]',requests,'Reason'));
+assert.equal(requests[0].quantity,10);
+console.log('Approval quantity bounds, zero rejection, reason requirement and request identity checks passed.');

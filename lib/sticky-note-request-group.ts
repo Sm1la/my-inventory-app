@@ -1,4 +1,4 @@
-const SIZES: Record<string,string> = { "ST-LIST-014": "3″ × 3″", "ST-LIST-014-2X3": "2″ × 3″", "ST-LIST-014-2X2": "2″ × 2″" };
+const SIZES: Record<string,string> = { "ST-LIST-014-2X2": "2″ × 2″", "ST-LIST-014-2X3": "2″ × 3″", "ST-LIST-014": "3″ × 3″" };
 export function stickyNoteSize(item: { code: string; category: string }): string {
   return item.category === "Stationery" ? SIZES[item.code] ?? "" : "";
 }

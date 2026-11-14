@@ -11,17 +11,17 @@ import { COLOURS, stationeryType, defaultColour, fixedColour } from "@/lib/stati
 import type { RequestLine } from "@/lib/request-lines";
 
 type RequestItem = {photo_url?:string; stationery_type?: string; colour?: string; id: string; name: string; code: string; brand: string; category: string; balance: number; unit: string };
-type Props = { requestorIdentity: string | null; items: RequestItem[]; initialCategory: string; initialItemId?: string; approvers: readonly string[]; departments: readonly string[]; busy: boolean };
+type Props = { requestorIdentity: string | null; items: RequestItem[]; initialCategory: string; initialItemId?: string; initialSelections?:Record<string,string>; approvers: readonly string[]; departments: readonly string[]; busy: boolean };
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="field"><span>{label}</span>{children}</label>; }
 
-export default function SupplyRequestFields({ requestorIdentity, items, initialCategory, initialItemId, approvers, departments, busy }: Props) {
+export default function SupplyRequestFields({ requestorIdentity, items, initialCategory, initialItemId, initialSelections, approvers, departments, busy }: Props) {
   const [category, setCategory] = useState(initialCategory);
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<Record<string, string>>(() => initialItemId ? { [initialItemId]: "1" } : {});
+  const [search, setSearch] = useState(()=>initialSelections&&stickyNoteVariants(items).some(item=>initialSelections[item.id]!==undefined)?"Sticky Notes":"");
+  const [selected, setSelected] = useState<Record<string, string>>(() => initialSelections??(initialItemId ? { [initialItemId]: "1" } : {}));
   const [colours, setColours] = useState<Record<string,string>>({});
   const [highlighterColours,setHighlighterColours] = useState<Record<string,Record<string,string>>>({});
   const [paperExpanded,setPaperExpanded] = useState(() => paperRequestVariants(items).some(item => item.id === initialItemId));
-  const [stickyExpanded,setStickyExpanded] = useState(() => stickyNoteVariants(items).some(item => item.id === initialItemId));
+  const [stickyExpanded,setStickyExpanded] = useState(() => stickyNoteVariants(items).some(item => item.id === initialItemId||initialSelections?.[item.id]!==undefined));
   const [otherColour,setOtherColour] = useState("");
   const [other, setOther] = useState(false);
   const [otherName, setOtherName] = useState("");

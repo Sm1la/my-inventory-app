@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import ColourSelect from "./colour-select";
 import ColourChecklist from "./colour-checklist";
 import { paperRequestVariants } from "@/lib/paper-request-group";
+import { stickyNoteSize, stickyNoteVariants } from "@/lib/sticky-note-request-group";
 import { COLOURS, stationeryType, defaultColour, fixedColour } from "@/lib/stationery-colours";
 import type { RequestLine } from "@/lib/request-lines";
 
@@ -18,6 +19,7 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
   const [colours, setColours] = useState<Record<string,string>>({});
   const [highlighterColours,setHighlighterColours] = useState<Record<string,Record<string,string>>>({});
   const [paperExpanded,setPaperExpanded] = useState(() => paperRequestVariants(items).some(item => item.id === initialItemId));
+  const [stickyExpanded,setStickyExpanded] = useState(() => stickyNoteVariants(items).some(item => item.id === initialItemId));
   const [otherColour,setOtherColour] = useState("");
   const [other, setOther] = useState(false);
   const [otherName, setOtherName] = useState("");
@@ -36,6 +38,10 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
   const paperIds = new Set(paperVariants.map(item => item.id));
   const showPaperGroup = visibleItems.some(item => paperIds.has(item.id));
   const missingPaperColours = paperExpanded && !paperVariants.some(item => selected[item.id] !== undefined);
+  const stickyVariants = stickyNoteVariants(items);
+  const stickyIds = new Set(stickyVariants.map(item => item.id));
+  const showStickyGroup = visibleItems.some(item => stickyIds.has(item.id)) || ((category === "All categories" || category === "Stationery") && stickyVariants.length > 0 && "sticky notes post-it notes 3m".includes(search.toLowerCase()));
+  const missingStickySizes = stickyExpanded && !stickyVariants.some(item => selected[item.id] !== undefined);
   const missingHighlighterColours = selectedItems.some(item => stationeryType(item) === "Highlighter" && !Object.keys(highlighterColours[item.id] ?? {}).length);
   const lines: RequestLine[] = selectedItems.flatMap(item => {
     const base = { item_id: item.id, other_name: null, other_brand: "", other_category: null };
@@ -61,7 +67,7 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
   }
   return <fieldset disabled={busy} className="request-fields">
     <input type="hidden" name="request_lines" value={JSON.stringify(lines)}/>
-    <input type="hidden" name="request_colour_error" value={missingHighlighterColours ? "Tick at least one colour for each selected highlighter." : missingPaperColours ? "Tick at least one colour for A4 Colour Paper." : ""}/>
+    <input type="hidden" name="request_colour_error" value={missingHighlighterColours ? "Tick at least one colour for each selected highlighter." : missingPaperColours ? "Tick at least one colour for A4 Colour Paper." : missingStickySizes ? "Tick at least one size for Sticky Notes." : ""}/>
     <div className="request-picker-heading"><h3>Choose items</h3><span aria-live="polite">{lines.length} selected</span></div>
     <p className="request-picker-help">Tick the boxes on the right and enter a quantity for each item. Your signed-in account fills the requestor. Choose the department and approver once below.</p>
     <div className="request-picker-filters"><Field label="Category"><select value={category} onChange={event => setCategory(event.target.value)}><option>All categories</option><option>Stationery</option><option>Pantry</option></select></Field><Field label="Search items"><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Item name, code or brand"/></Field></div>
@@ -73,12 +79,18 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
         <input id="request-a4-colour-paper" type="checkbox" aria-label="Select A4 Colour Paper" checked={paperExpanded} onChange={event => { setPaperExpanded(event.target.checked); if(!event.target.checked) setSelected(previous => Object.fromEntries(Object.entries(previous).filter(([id]) => !paperIds.has(id)))); }}/>
         {paperExpanded && <ColourChecklist label="A4 Colour Paper" choices={paperVariants.map(item => fixedColour(item))} values={Object.fromEntries(paperVariants.filter(item => selected[item.id] !== undefined).map(item => [fixedColour(item),selected[item.id]]))} details={Object.fromEntries(paperVariants.map(item => [fixedColour(item),item.balance + " " + item.unit + " available"]))} onChange={(colour,quantity) => { const item=paperVariants.find(item => fixedColour(item) === colour); if(!item) return; if(quantity === null) toggle(item.id,false); else setSelected(previous => ({...previous,[item.id]:quantity})); }}/ >}
       </div>}
-      {visibleItems.filter(item => !paperIds.has(item.id)).map(item => <div className={selected[item.id] !== undefined ? "request-pick-row selected" : "request-pick-row"} key={item.id}>
+      {showStickyGroup && <div className={stickyExpanded ? "request-pick-row selected" : "request-pick-row"}>
+        <label htmlFor="request-sticky-notes"><strong>Sticky Notes (Post-it Notes)</strong><small>Stationery · Brand: 3M · Tick sizes and enter a quantity for each.</small></label>
+        <span className="highlighter-total" aria-label="Total quantity for Sticky Notes">{stickyVariants.reduce((sum,item) => sum + Number(selected[item.id] || 0),0)}</span>
+        <input id="request-sticky-notes" type="checkbox" aria-label="Select Sticky Notes" checked={stickyExpanded} onChange={event => { setStickyExpanded(event.target.checked); if(!event.target.checked) setSelected(previous => Object.fromEntries(Object.entries(previous).filter(([id]) => !stickyIds.has(id)))); }}/>
+        {stickyExpanded && <ColourChecklist label="Sticky Notes" instruction="tick sizes and enter quantities" choices={stickyVariants.map(stickyNoteSize)} values={Object.fromEntries(stickyVariants.filter(item => selected[item.id] !== undefined).map(item => [stickyNoteSize(item),selected[item.id]]))} details={Object.fromEntries(stickyVariants.map(item => [stickyNoteSize(item),item.balance + " " + item.unit + " available"]))} onChange={(size,quantity) => { const item=stickyVariants.find(item => stickyNoteSize(item) === size); if(!item) return; if(quantity === null) toggle(item.id,false); else setSelected(previous => ({...previous,[item.id]:quantity})); }}/ >}
+      </div>}
+      {visibleItems.filter(item => !paperIds.has(item.id) && !stickyIds.has(item.id)).map(item => <div className={selected[item.id] !== undefined ? "request-pick-row selected" : "request-pick-row"} key={item.id}>
         <div><label htmlFor={"request-pick-" + item.id}><strong>{item.name}</strong><small>{item.category}{item.brand ? " · " + item.brand : ""} · {item.balance} {item.unit} available</small></label>{selected[item.id] !== undefined && stationeryType(item) && stationeryType(item) !== "Highlighter" && <ColourSelect fixed={fixedColour(item)} kind={stationeryType(item)} value={colours[item.id] ?? defaultColour(item)} onChange={value => setColours(previous => ({...previous,[item.id]:value}))} label={"Colour for " + item.name} required/>}</div>
         {stationeryType(item) === "Highlighter" ? <span className="highlighter-total" aria-label={"Total quantity for " + item.name}>{Object.values(highlighterColours[item.id] ?? {}).reduce((sum,quantity) => sum + Number(quantity || 0),0)}</span> : <input className="request-line-qty" type="number" min={1} max={10000000} step={1} required={selected[item.id] !== undefined} disabled={selected[item.id] === undefined} aria-label={"Quantity for " + item.name} value={selected[item.id] ?? "1"} onChange={event => setSelected(previous => ({ ...previous, [item.id]: event.target.value }))}/> }
         <input id={"request-pick-" + item.id} type="checkbox" aria-label={"Select " + item.name} checked={selected[item.id] !== undefined} onChange={event => toggle(item.id, event.target.checked)}/>{selected[item.id] !== undefined && stationeryType(item) === "Highlighter" && <ColourChecklist label={item.name} choices={COLOURS.Highlighter} values={highlighterColours[item.id] ?? {}} onChange={(colour,quantity) => setHighlighterQuantity(item.id,colour,quantity)}/>}
       </div>)}
-      {!visibleItems.length && <p className="request-no-matches">No matching items. Try another search or choose Other below.</p>}
+      {!visibleItems.length && !showStickyGroup && !showPaperGroup && <p className="request-no-matches">No matching items. Try another search or choose Other below.</p>}
     </div>
     {(category !== "Pantry" || stamp) && <label className="request-other-toggle"><span><strong>Rubber stamp</strong><small>Choose Ink pad or Self ink rubber stamp and enter your specifications.</small></span><input type="checkbox" aria-label="Select Rubber stamp" checked={stamp} onChange={event => setStamp(event.target.checked)}/></label>}
     {stamp && <div className="form-grid request-other-details" role="group" aria-label="Rubber stamp specifications"><Field label="Rubber stamp type *"><select value={stampType} onChange={event => setStampType(event.target.value)}><option>Ink pad</option><option>Self ink rubber stamp</option></select></Field><Field label="Rubber stamp quantity *"><input type="number" min={1} max={10000000} step={1} required value={stampQuantity} onChange={event => setStampQuantity(event.target.value)}/></Field>{stampType === "Self ink rubber stamp" && <Field label="Ink colour *"><select required value={stampColour} onChange={event => setStampColour(event.target.value)}><option value="" disabled>Select ink colour</option><option>Black</option><option>Blue</option></select></Field>}<div className="full"><Field label="Size / dimensions *"><input required maxLength={40} value={stampSize} onChange={event => setStampSize(event.target.value)} placeholder="e.g. 60 × 30 mm, or pad size No. 2"/></Field></div><div className="full"><Field label="Custom stamp details *"><textarea required rows={4} maxLength={300} value={stampDetails} onChange={event => setStampDetails(event.target.value)} placeholder="Enter the exact wording, layout, ink colour, shape and any other requirements."/></Field><small>These specifications are saved with this request for approval and reordering.</small></div></div>}

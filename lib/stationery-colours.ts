@@ -16,7 +16,7 @@ export function stationeryType(item: { name: string; category: string; stationer
 export function fixedColour(item: { name: string; category: string }): string {
   if (item.category !== "Stationery") return "";
   if (/^A4\s+Paper\s*\(White\)$/i.test(item.name.trim())) return "White";
-  const variant = /^A4\s+Colou?r\s+Paper\b.*[—-]\s*(Blue|Green|Yellow|Red)\s*$/i.exec(item.name.trim());
+  const variant = /^(?:A4\s+)?Colou?r\s+Paper\b.*[—-]\s*(Blue|Green|Yellow|Red)\s*$/i.exec(item.name.trim());
   return variant ? variant[1][0].toUpperCase() + variant[1].slice(1).toLowerCase() : "";
 }
 export function defaultColour(item: { name: string; colour?: string; category: string; stationery_type?: string }): string {

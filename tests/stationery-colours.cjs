@@ -35,6 +35,8 @@ assert.deepEqual(stickyNoteVariants(stickyItems).map(item=>stickyNoteSize(item))
 assert.equal(stickyNoteSize({code:'ST-LIST-014',category:'Pantry'}),'');
 assert.deepEqual(readRequestLines(JSON.stringify([{item_id:'large',quantity:2},{item_id:'middle',quantity:1}]),stickyItems,true).map(line=>[line.item_id,line.quantity,line.requested_colour]),[['large',2,''],['middle',1,'']]);
 const paperVariants=['Green','Blue','Red','Yellow'].map(colour=>({id:'a4-'+colour,name:'A4 Colour Paper (80gm) — '+colour,category:'Stationery',balance:3}));
+const renamedPaperVariants=paperVariants.map(item=>({...item,name:item.name.replace('A4 Colour Paper','Color Paper')}));
+assert.deepEqual(paperRequestVariants(renamedPaperVariants).map(item=>colours.fixedColour(item)),['Blue','Yellow','Red','Green']);
 assert.deepEqual(paperRequestVariants([...paperVariants,{id:'white',name:'A4 Paper (White)',category:'Stationery'},{id:'a3',name:'A3 Copy Paper',category:'Stationery'}]).map(item=>item.id),['a4-Blue','a4-Yellow','a4-Red','a4-Green']);
 const paperLines=readRequestLines(JSON.stringify([{item_id:'a4-Blue',quantity:2},{item_id:'a4-Red',quantity:1}]),paperVariants,true);
 assert.deepEqual(paperLines.map(line=>[line.item_id,line.requested_colour,line.quantity]),[['a4-Blue','Blue',2],['a4-Red','Red',1]]);

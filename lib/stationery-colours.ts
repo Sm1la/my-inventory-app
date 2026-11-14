@@ -2,10 +2,12 @@ export const COLOURS: Record<string, readonly string[]> = {
   Paper: ["Blue", "Green", "Yellow", "Red", "Other"],
   "Ball pen": ["Black", "Blue", "Red"],
   "Marker pen": ["Black", "Red", "Blue", "Green", "Other"],
+  Highlighter: ["Yellow", "Green", "Pink", "Lilac", "Blue"],
 };
 export function stationeryType(item: { name: string; category: string; stationery_type?: string }): string {
   if (item.category !== "Stationery") return "";
   if (item.stationery_type && COLOURS[item.stationery_type]) return item.stationery_type;
+  if (/\bhighlighters?\b/i.test(item.name)) return "Highlighter";
   if (/\bmarkers?\b/i.test(item.name)) return "Marker pen";
   if (/\bball\s*point\b|\bball\s*pens?\b/i.test(item.name)) return "Ball pen";
   if (/\bpaper\b/i.test(item.name) && !/\bclips?\b/i.test(item.name)) return "Paper";

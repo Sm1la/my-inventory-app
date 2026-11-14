@@ -18,6 +18,9 @@ assert.equal(colours.stationeryType({name:'Paper Clips',category:'Stationery'}),
 assert.equal(colours.stationeryType({name:'Black Ballpoint Pens',category:'Stationery'}),'Ball pen');
 assert.equal(colours.stationeryType({name:'Whiteboard Markers (Assorted)',category:'Stationery'}),'Marker pen');
 assert.equal(colours.stationeryType({name:'Paper cup',category:'Pantry'}),'');
+assert.equal(colours.stationeryType({name:'Highlighters',category:'Stationery'}),'Highlighter');
+assert.deepEqual(colours.COLOURS.Highlighter,['Yellow','Green','Pink','Lilac','Blue']);
+assert.throws(()=>colours.validateColour('Highlighter','Purple',true));
 for(const kind of Object.keys(colours.COLOURS)) for(const colour of colours.COLOURS[kind].filter(v=>v!=='Other')) assert.equal(colours.validateColour(kind,colour,true),colour);
 assert.equal(colours.validateColour('Paper','Pink',true),'Pink');
 assert.equal(colours.validateColour('Marker pen','Purple',true),'Purple');
@@ -26,6 +29,8 @@ assert.throws(()=>colours.validateColour('Paper','Other',true));
 assert.throws(()=>colours.validateColour('Paper','',true));
 const {readRequestLines}=load('lib/request-lines.ts',{'./stationery-colours':colours});
 const items=[{id:'paper',name:'A4 Paper',category:'Stationery'}];
+for(const colour of colours.COLOURS.Highlighter) assert.equal(readRequestLines(JSON.stringify([{item_id:'highlighter',quantity:1,requested_colour:colour}]),[{id:'highlighter',name:'Highlighters',category:'Stationery'}],true)[0].requested_colour,colour);
+assert.throws(()=>readRequestLines(JSON.stringify([{item_id:'highlighter',quantity:1}]),[{id:'highlighter',name:'Highlighters',category:'Stationery'}],true));
 const whitePaper=[{id:'white-paper',name:'A4 Paper (White)',category:'Stationery'}];
 assert.equal(readRequestLines(JSON.stringify([{item_id:'white-paper',quantity:2,requested_colour:'Blue'}]),whitePaper,true)[0].requested_colour,'White');
 assert.equal(readRequestLines(JSON.stringify([{item_id:'white-paper',quantity:2}]),whitePaper,true)[0].requested_colour,'White');

@@ -6,7 +6,15 @@ export type RequestLine = {
   other_brand: string;
   other_category: string | null;
   quantity: number;
+  notes?: string;
+  rubber_stamp?: { type: string; size: string; details: string };
 };
+
+export function requestNotes(line: RequestLine, sharedNotes: string): string {
+  const notes = [line.notes, sharedNotes.trim()].filter(Boolean).join("\n\n");
+  if (notes.length > 500) throw new Error("Stamp details and shared notes together must be 500 characters or fewer. Shorten the notes and try again.");
+  return notes;
+}
 
 export function readRequestLines(value: string, items: ReadonlyArray<{ id: string; name?: string; category?: string; stationery_type?: string }>, requireColours = false): RequestLine[] {
   let raw: unknown;
@@ -23,9 +31,18 @@ export function readRequestLines(value: string, items: ReadonlyArray<{ id: strin
     const item = items.find(item => item.id === row.item_id);
     const kind = stationeryType({ name: item?.name ?? String(row.other_name ?? ""), category: item?.category ?? String(row.other_category ?? ""), stationery_type: item?.stationery_type });
     const requested_colour = requireColours && kind ? validateColour(kind,typeof row.requested_colour === "string" ? row.requested_colour : "",true) : "";
-    const key = row.item_id === null ? "__other__" : String(row.item_id);
+    const key = row.rubber_stamp ? "__rubber_stamp__" : row.item_id === null ? "__other__" : String(row.item_id);
     if (seen.has(key)) throw new Error("Each item can only be selected once.");
     seen.add(key);
+    if (row.rubber_stamp) {
+      const stamp = row.rubber_stamp as Record<string, unknown>;
+      const size = typeof stamp.size === "string" ? stamp.size.trim() : "";
+      const details = typeof stamp.details === "string" ? stamp.details.trim() : "";
+      if (row.item_id !== null || !["Ink pad", "Self ink rubber stamp"].includes(String(stamp.type)) || !size || size.length > 40 || !details || details.length > 300) {
+        throw new Error("Choose a rubber stamp type, enter its size (up to 40 characters) and details (up to 300 characters).");
+      }
+      return { item_id: null, requested_colour: "", other_name: "Rubber stamp — " + stamp.type, other_brand: "", other_category: "Stationery", quantity: row.quantity, notes: "Size: " + size + "\nStamp details: " + details };
+    }
     if (row.item_id === null) {
       const name = typeof row.other_name === "string" ? row.other_name.trim() : "";
       const brand = typeof row.other_brand === "string" ? row.other_brand.trim() : "";

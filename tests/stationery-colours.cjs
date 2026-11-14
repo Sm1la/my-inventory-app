@@ -6,6 +6,12 @@ assert.equal(colours.defaultColour({name:'A4 Paper (White)',category:'Stationery
 assert.equal(colours.defaultColour({name:'A4 Colour Paper',category:'Stationery'}),'');
 assert.equal(colours.fixedColour({name:'A4 Paper (White)',category:'Stationery'}),'White');
 assert.equal(colours.fixedColour({name:'A4 Colour Paper',category:'Stationery'}),'');
+assert.equal(colours.COLOURS.Paper.includes('White'),false);
+for(const colour of ['Blue','Green','Yellow','Red']) {
+  const variant={name:'A4 Colour Paper (80gm) — '+colour,category:'Stationery'};
+  assert.equal(colours.fixedColour(variant),colour);
+  assert.equal(colours.defaultColour({...variant,colour:'Other'}),colour);
+}
 assert.equal(colours.defaultColour({name:'A4 Paper (White)',colour:'Blue',category:'Stationery'}),'White');
 assert.equal(colours.validateColour('Paper','White',true),'White');
 assert.equal(colours.stationeryType({name:'Paper Clips',category:'Stationery'}),'');
@@ -23,6 +29,8 @@ const items=[{id:'paper',name:'A4 Paper',category:'Stationery'}];
 const whitePaper=[{id:'white-paper',name:'A4 Paper (White)',category:'Stationery'}];
 assert.equal(readRequestLines(JSON.stringify([{item_id:'white-paper',quantity:2,requested_colour:'Blue'}]),whitePaper,true)[0].requested_colour,'White');
 assert.equal(readRequestLines(JSON.stringify([{item_id:'white-paper',quantity:2}]),whitePaper,true)[0].requested_colour,'White');
+const bluePaper=[{id:'blue-paper',name:'A4 Colour Paper (80gm) — Blue',category:'Stationery'}];
+assert.equal(readRequestLines(JSON.stringify([{item_id:'blue-paper',quantity:1,requested_colour:'Yellow'}]),bluePaper,true)[0].requested_colour,'Blue');
 assert.equal(readRequestLines(JSON.stringify([{item_id:'paper',quantity:2,requested_colour:'Green'}]),items,true)[0].requested_colour,'Green');
 assert.throws(()=>readRequestLines(JSON.stringify([{item_id:'paper',quantity:2}]),items,true));
 assert.equal(readRequestLines(JSON.stringify([{item_id:'paper',quantity:2}]),items)[0].quantity,2);

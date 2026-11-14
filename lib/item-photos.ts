@@ -1,8 +1,9 @@
 "use client";
-import {useEffect,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 import type {SupabaseClient} from '@supabase/supabase-js';
+import {itemPhotoUrl} from './catalog-photo-reference';
 export const PHOTO_BUCKET='inventory-photos';
-export function useItemPhotos(db:SupabaseClient|null,items:readonly {id:string;photo_path?:string|null}[]) {
+export function useItemPhotos(db:SupabaseClient|null,items:readonly {id:string;code?:string;photo_path?:string|null}[]) {
   const [urls,setUrls]=useState<Record<string,string>>({});
   useEffect(()=>{
     let cancelled=false;
@@ -16,7 +17,7 @@ export function useItemPhotos(db:SupabaseClient|null,items:readonly {id:string;p
     void refresh();const timer=setInterval(()=>void refresh(),45*60*1000);
     return ()=>{cancelled=true;clearInterval(timer);};
   },[db,items]);
-  return urls;
+  return useMemo(()=>Object.fromEntries(items.flatMap(item=>{const url=itemPhotoUrl(item,urls);return url?[[item.id,url]]:[];})),[items,urls]);
 }
 export async function preparePhoto(file:File):Promise<Blob>{
   if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG or WebP photo.');

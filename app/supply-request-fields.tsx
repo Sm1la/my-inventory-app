@@ -71,7 +71,7 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
     <input type="hidden" name="request_lines" value={JSON.stringify(lines)}/>
     <input type="hidden" name="request_colour_error" value={missingHighlighterColours ? "Tick at least one colour for each selected highlighter." : missingPaperColours ? "Tick at least one colour for Color Paper." : missingStickySizes ? "Tick at least one size for Sticky Notes." : ""}/>
     <div className="request-picker-heading"><h3>Choose items</h3><span aria-live="polite">{lines.length} selected</span></div>
-    <p className="request-picker-help">Tick the boxes on the right and enter a quantity for each item. Your signed-in account fills the requestor. Choose the department and approver once below.</p>
+    <p className="request-picker-help">Tick the boxes on the right and enter a quantity for each item. Your signed-in account fills the requestor. Choose the department and approver once below. Click a photo to enlarge it; reference packaging may vary.</p>
     <div className="request-picker-filters"><Field label="Category"><select value={category} onChange={event => setCategory(event.target.value)}><option>All categories</option><option>Stationery</option><option>Pantry</option></select></Field><Field label="Search items"><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Name, brand, colour or code — any word order"/></Field></div>
     <div className="request-pick-list" role="group" aria-label="Items to request">
       <div className="request-pick-labels"><span>Item / available stock</span><span>Qty</span><span>Tick</span></div>

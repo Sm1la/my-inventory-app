@@ -19,3 +19,14 @@ assert.equal((await send(f,{action:'delete',id:target.id})).status,200);assert.d
 console.log('User management authentication, validation, CRUD, session revocation and owner protection checks passed');
 
 const preflight=await fixture().handler(new Request("https://example.test",{method:"OPTIONS",headers:{origin:"https://my-inventory-app-smoky-three.vercel.app","access-control-request-headers":"authorization,apikey,x-workspace-id"}}));assert.equal(preflight.status,204);assert.ok(preflight.headers.get("access-control-allow-headers").includes("x-workspace-id"));
+
+// Password boundary checks use mock Auth only; no real accounts are created.
+for (const action of ['create','update']) {
+  for (const [password,status] of [['Abc1234',400],['Abcd1234',200],['A1'.repeat(64),200],['A1'.repeat(64)+'A',400]]) {
+    const sample=fixture();
+    assert.equal((await send(sample,{action,id:target.id,name:'Test Staff',email:target.email,password})).status,status);
+    if(status===400) assert.equal(sample.calls.length,0);
+  }
+}
+f=fixture();assert.equal((await send(f,{action:'update',id:target.id,name:'Renamed Staff',email:target.email,password:''})).status,200);assert.equal('password' in f.calls[0][1],false);
+console.log('Eight-character alphanumeric passwords accepted; shorter and oversized passwords rejected');

@@ -46,7 +46,7 @@ export function makeHandler({ userClient, adminClient }) {
       if(input.action!=="delete") {
         if(!companyEmail(email)) return reply({error:"Use an @selangorproperties.com.my email address"},400);
         if(!name || name.length>120) return reply({error:"Enter a name of 1–120 characters"},400);
-        if((input.action==="create" || password) && (password.length<12 || password.length>128)) return reply({error:"Use a password of 12–128 characters"},400);
+        if((input.action==="create" || password) && (password.length<8 || password.length>128)) return reply({error:"Use a password of 8–128 characters"},400);
       }
       if(input.action==="create") {
         const result=fail(await admin.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{full_name:name},app_metadata:{inventory_created_by:actor.id}}));

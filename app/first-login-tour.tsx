@@ -45,7 +45,7 @@ export default function FirstLoginTour({db,userId,manager}:{db:SupabaseClient;us
    <header className="tour-header"><span>SPB · QUICK DEMO</span><span>Step {step+1} of {steps.length}</span></header>
    <div className="tour-progress" aria-label={'Step '+(step+1)+' of '+steps.length}>{steps.map((item,index)=><span key={item.title} className={index<=step?'done':''}/>)}</div>
    <div className="tour-content">
-    <div className="tour-icon" aria-hidden="true">{current.icon}</div>
+    <div className="tour-icon tour-spb-logo"><svg viewBox="0 0 110 86" role="img" aria-label="SPB — Selangor Properties"><rect x="2" y="2" width="106" height="82" rx="25" fill="#df252f"/><rect x="10" y="10" width="90" height="66" rx="17" fill="none" stroke="white" strokeWidth="3"/><text x="55" y="64" textAnchor="middle" textLength="80" lengthAdjust="spacingAndGlyphs" fill="white" fontFamily="Arial Narrow,Arial,sans-serif" fontSize="62" fontWeight="700">SPB</text></svg></div>
     <h2 id="tour-title" ref={title} tabIndex={-1}>{current.title}</h2>
     <p id="tour-intro" className="tour-intro">{current.intro}</p>
     {step===2&&<div className="tour-example" aria-label="Example only: choosing request items"><span>Example only</span><div><strong>A4 Paper (White)</strong><span>Qty 2</span><b aria-hidden="true">✓</b></div><div><strong>Sticky Notes — 3″ × 3″</strong><span>Qty 1</span><b aria-hidden="true">✓</b></div></div>}

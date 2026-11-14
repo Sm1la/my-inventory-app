@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import ColourSelect from "./colour-select";
-import { stationeryType, defaultColour } from "@/lib/stationery-colours";
+import { stationeryType, defaultColour, fixedColour } from "@/lib/stationery-colours";
 import type { RequestLine } from "@/lib/request-lines";
 
 type RequestItem = { stationery_type?: string; colour?: string; id: string; name: string; code: string; brand: string; category: string; balance: number; unit: string };
@@ -28,7 +28,7 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
   const [stampQuantity, setStampQuantity] = useState("1");
   const selectedItems = items.filter(item => selected[item.id] !== undefined);
   const visibleItems = items.filter(item => (category === "All categories" || item.category === category) && [item.name, item.code, item.brand].join(" ").toLowerCase().includes(search.toLowerCase()));
-  const lines: RequestLine[] = selectedItems.map(item => ({ requested_colour: colours[item.id] ?? defaultColour(item), item_id: item.id, quantity: Number(selected[item.id]), other_name: null, other_brand: "", other_category: null }));
+  const lines: RequestLine[] = selectedItems.map(item => ({ requested_colour: fixedColour(item) || (colours[item.id] ?? defaultColour(item)), item_id: item.id, quantity: Number(selected[item.id]), other_name: null, other_brand: "", other_category: null }));
   if (other) lines.push({ requested_colour: otherColour, item_id: null, other_name: otherName, other_brand: otherBrand, other_category: otherCategory, quantity: Number(otherQuantity) });
   if (stamp) lines.push({ requested_colour: "", item_id: null, other_name: "Rubber stamp — " + stampType, other_brand: "", other_category: "Stationery", quantity: Number(stampQuantity), rubber_stamp: { type: stampType, size: stampSize, details: stampDetails, colour: stampColour } });
   function toggle(id: string, checked: boolean) {
@@ -46,7 +46,7 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
     <div className="request-pick-list" role="group" aria-label="Items to request">
       <div className="request-pick-labels"><span>Item / available stock</span><span>Qty</span><span>Tick</span></div>
       {visibleItems.map(item => <div className={selected[item.id] !== undefined ? "request-pick-row selected" : "request-pick-row"} key={item.id}>
-        <div><label htmlFor={"request-pick-" + item.id}><strong>{item.name}</strong><small>{item.category}{item.brand ? " · " + item.brand : ""} · {item.balance} {item.unit} available</small></label>{selected[item.id] !== undefined && stationeryType(item) && <ColourSelect kind={stationeryType(item)} value={colours[item.id] ?? defaultColour(item)} onChange={value => setColours(previous => ({...previous,[item.id]:value}))} label={"Colour for " + item.name} required/>}</div>
+        <div><label htmlFor={"request-pick-" + item.id}><strong>{item.name}</strong><small>{item.category}{item.brand ? " · " + item.brand : ""} · {item.balance} {item.unit} available</small></label>{selected[item.id] !== undefined && stationeryType(item) && <ColourSelect fixed={fixedColour(item)} kind={stationeryType(item)} value={colours[item.id] ?? defaultColour(item)} onChange={value => setColours(previous => ({...previous,[item.id]:value}))} label={"Colour for " + item.name} required/>}</div>
         <input className="request-line-qty" type="number" min={1} max={10000000} step={1} required={selected[item.id] !== undefined} disabled={selected[item.id] === undefined} aria-label={"Quantity for " + item.name} value={selected[item.id] ?? "1"} onChange={event => setSelected(previous => ({ ...previous, [item.id]: event.target.value }))}/>
         <input id={"request-pick-" + item.id} type="checkbox" aria-label={"Select " + item.name} checked={selected[item.id] !== undefined} onChange={event => toggle(item.id, event.target.checked)}/>
       </div>)}

@@ -1,7 +1,8 @@
 "use client";
 import { COLOURS } from "@/lib/stationery-colours";
 
-export default function ColourSelect({ kind, value, onChange, label = "Colour", required = false }: { kind: string; value: string; onChange: (value: string) => void; label?: string; required?: boolean }) {
+export default function ColourSelect({ kind, value, onChange, label = "Colour", required = false, fixed = "" }: { kind: string; value: string; onChange: (value: string) => void; label?: string; required?: boolean; fixed?: string }) {
+  if (fixed) return <label className="field"><span>{label}</span><input readOnly value={fixed}/></label>;
   const choices = COLOURS[kind];
   if (!choices) return null;
   const other = !!value && !choices.filter(colour => colour !== "Other").includes(value);

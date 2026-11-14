@@ -11,7 +11,11 @@ export function stationeryType(item: { name: string; category: string; stationer
   if (/\bpaper\b/i.test(item.name) && !/\bclips?\b/i.test(item.name)) return "Paper";
   return "";
 }
+export function fixedColour(item: { name: string; category: string }): string {
+  return item.category === "Stationery" && /^A4\s+Paper\s*\(White\)$/i.test(item.name.trim()) ? "White" : "";
+}
 export function defaultColour(item: { name: string; colour?: string; category: string; stationery_type?: string }): string {
+  if (fixedColour(item)) return fixedColour(item);
   if (item.colour) return item.colour;
   const choices = COLOURS[stationeryType(item)] ?? [];
   return choices.find(colour => colour !== "Other" && new RegExp("\\b" + colour + "\\b", "i").test(item.name)) ?? "";

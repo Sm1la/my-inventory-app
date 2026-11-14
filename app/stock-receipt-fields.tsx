@@ -1,8 +1,10 @@
 "use client";
+import ItemPhoto from "./item-photo";
+import {searchInventory} from "@/lib/smart-search";
 
 import { useState } from "react";
 
-type Item = { colour?: string; id: string; name: string; code: string; brand: string; category: string; balance: number; unit: string };
+type Item = {photo_url?:string; colour?: string; id: string; name: string; code: string; brand: string; category: string; balance: number; unit: string };
 type Props = { items: Item[]; initialCategory: string; initialItemId?: string; today: string; receivedBy: string | null; departments: readonly string[]; busy: boolean; onCreateItem: () => void };
 
 export default function StockReceiptFields({ items, initialCategory, initialItemId, today, receivedBy, departments, busy, onCreateItem }: Props) {
@@ -10,7 +12,7 @@ export default function StockReceiptFields({ items, initialCategory, initialItem
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Record<string, string>>(() => initialItemId ? { [initialItemId]: "1" } : {});
   const selectedItems = items.filter(item => selected[item.id] !== undefined);
-  const visibleItems = items.filter(item => (category === "All categories" || item.category === category) && `${item.name} ${item.code} ${item.brand} ${item.colour ?? ""}`.toLowerCase().includes(search.toLowerCase()));
+  const visibleItems = items.filter(item => (category === "All categories" || item.category === category) && searchInventory(item,search));
   function toggle(id: string, checked: boolean) {
     setSelected(previous => { const next = { ...previous }; if (checked) next[id] = "1"; else delete next[id]; return next; });
   }
@@ -19,11 +21,11 @@ export default function StockReceiptFields({ items, initialCategory, initialItem
     <label className="field receipt-date"><span>Date received *</span><input name="transaction_date" type="date" required defaultValue={today} max={today}/></label>
     <div className="request-picker-heading"><h3>Tick items received</h3><span aria-live="polite">{selectedItems.length} selected</span></div>
     <p className="request-picker-help">Tick the items, enter the quantity received for each, then save. All selected items use the date above.</p>
-    <div className="request-picker-filters"><label className="field"><span>Category</span><select value={category} onChange={event => setCategory(event.target.value)}><option>All categories</option><option>Stationery</option><option>Pantry</option></select></label><label className="field"><span>Search items</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Item name, code or brand"/></label></div>
+    <div className="request-picker-filters"><label className="field"><span>Category</span><select value={category} onChange={event => setCategory(event.target.value)}><option>All categories</option><option>Stationery</option><option>Pantry</option></select></label><label className="field"><span>Search items</span><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Name, brand, colour or code — any word order"/></label></div>
     <div className="request-pick-list" role="group" aria-label="Items received">
       <div className="request-pick-labels"><span>Item / current stock</span><span>Qty received</span><span>Tick</span></div>
       {visibleItems.map(item => <div key={item.id} className={selected[item.id] !== undefined ? "request-pick-row selected" : "request-pick-row"}>
-        <label htmlFor={"receipt-pick-" + item.id}><strong>{item.name}</strong><small>{item.category}{item.brand ? " · " + item.brand : ""} · {item.colour ? item.colour + " · " : ""}{item.balance} {item.unit} in stock</small></label>
+        <div className="picker-item-photo"><ItemPhoto name={item.name} category={item.category} url={item.photo_url}/><label htmlFor={"receipt-pick-" + item.id}><strong>{item.name}</strong><small>{item.category}{item.brand ? " · " + item.brand : ""} · {item.colour ? item.colour + " · " : ""}{item.balance} {item.unit} in stock</small></label></div>
         <input className="request-line-qty" type="number" min={1} max={10000000} step={1} required={selected[item.id] !== undefined} disabled={selected[item.id] === undefined} aria-label={"Quantity received for " + item.name} value={selected[item.id] ?? "1"} onChange={event => setSelected(previous => ({ ...previous, [item.id]: event.target.value }))}/>
         <input id={"receipt-pick-" + item.id} type="checkbox" aria-label={"Receive " + item.name} checked={selected[item.id] !== undefined} onChange={event => toggle(item.id,event.target.checked)}/>
       </div>)}

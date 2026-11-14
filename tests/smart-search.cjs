@@ -1,0 +1,16 @@
+const fs=require('fs'),ts=require('typescript'),assert=require('node:assert/strict');
+const mod={exports:{}};new Function('exports',ts.transpileModule(fs.readFileSync('lib/smart-search.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(mod.exports);
+const {matchesSearch,searchInventory}=mod.exports;
+const paper={name:'Color Paper (80gm) — Blue',code:'ST-LIST-040-BLUE',brand:'IK',category:'Stationery',colour:'Blue'};
+assert.equal(searchInventory(paper,'blue paper'),true);
+assert.equal(searchInventory(paper,'paper colour blue'),true);
+assert.equal(searchInventory(paper,'STLIST040BLUE'),true);
+assert.equal(searchInventory(paper,'red paper'),false);
+assert.equal(searchInventory(paper,'  '),true);
+assert.equal(searchInventory({name:'Nescafé Gold',brand:'Nestlé'},'gold nescafe'),true);
+assert.equal(searchInventory({name:'Sticky Notes (Post-it Notes) — 3 × 3',brand:'3M'},'3m post-it'),true);
+assert.equal(searchInventory({name:'Blue Ballpoint Pens'},'ball pen blue'),true);
+assert.equal(matchesSearch('blue Finance','Blue marker','Finance'),true);
+assert.equal(matchesSearch('green Finance','Blue marker','Finance'),false);
+assert.equal(searchInventory({name:'Black Gel Pen'},'blue'),false);
+console.log('Smart search word order, accents, colour spelling, synonyms and compact codes passed.');

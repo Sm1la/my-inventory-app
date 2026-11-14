@@ -142,7 +142,7 @@ export default function Inventory() {
     } else if (modal.type === "delete") void act(() => db.from("inventory_items").delete().eq("id",modal.item.id), "Item and its demo history deleted.");
     else if (modal.type === "request") {
       let lines;
-      try { lines = readRequestLines(text("request_lines"), items, true).map(line => ({ ...line, notes: requestNotes(line, text("notes")) })); }
+      try { if(text("request_colour_error")) throw new Error(text("request_colour_error")); lines = readRequestLines(text("request_lines"), items, true).map(line => ({ ...line, notes: requestNotes(line, text("notes")) })); }
       catch (e) { setError(e instanceof Error ? e.message : "Check your selected items."); return; }
       const enteredRequestor = text("requestor"), department = text("department"), assignedApprover = text("assigned_approver");
       void act(async () => {

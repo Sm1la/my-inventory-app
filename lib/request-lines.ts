@@ -31,7 +31,7 @@ export function readRequestLines(value: string, items: ReadonlyArray<{ id: strin
     const item = items.find(item => item.id === row.item_id);
     const kind = stationeryType({ name: item?.name ?? String(row.other_name ?? ""), category: item?.category ?? String(row.other_category ?? ""), stationery_type: item?.stationery_type });
     const requested_colour = requireColours && kind ? fixedColour({name:item?.name ?? String(row.other_name ?? ""),category:item?.category ?? String(row.other_category ?? "")}) || validateColour(kind,typeof row.requested_colour === "string" ? row.requested_colour : "",true) : "";
-    const key = row.rubber_stamp ? "__rubber_stamp__" : row.item_id === null ? "__other__" : String(row.item_id);
+    const key = row.rubber_stamp ? "__rubber_stamp__" : row.item_id === null ? "__other__" : JSON.stringify([row.item_id,requireColours && kind === "Highlighter" ? requested_colour : ""]);
     if (seen.has(key)) throw new Error("Each item can only be selected once.");
     seen.add(key);
     if (row.rubber_stamp) {

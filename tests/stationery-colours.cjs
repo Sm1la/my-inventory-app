@@ -31,6 +31,11 @@ const {readRequestLines}=load('lib/request-lines.ts',{'./stationery-colours':col
 const items=[{id:'paper',name:'A4 Paper',category:'Stationery'}];
 for(const colour of colours.COLOURS.Highlighter) assert.equal(readRequestLines(JSON.stringify([{item_id:'highlighter',quantity:1,requested_colour:colour}]),[{id:'highlighter',name:'Highlighters',category:'Stationery'}],true)[0].requested_colour,colour);
 assert.throws(()=>readRequestLines(JSON.stringify([{item_id:'highlighter',quantity:1}]),[{id:'highlighter',name:'Highlighters',category:'Stationery'}],true));
+const highlighterItems=[{id:'highlighter',name:'Highlighters',category:'Stationery'}];
+const multiColour=[{item_id:'highlighter',quantity:2,requested_colour:'Yellow'},{item_id:'highlighter',quantity:3,requested_colour:'Pink'}];
+assert.deepEqual(readRequestLines(JSON.stringify(multiColour),highlighterItems,true).map(row=>[row.requested_colour,row.quantity]),[['Yellow',2],['Pink',3]]);
+assert.throws(()=>readRequestLines(JSON.stringify([multiColour[0],multiColour[0]]),highlighterItems,true));
+assert.throws(()=>readRequestLines(JSON.stringify(multiColour),highlighterItems,false)); // receipts still reject duplicate item IDs
 const whitePaper=[{id:'white-paper',name:'A4 Paper (White)',category:'Stationery'}];
 assert.equal(readRequestLines(JSON.stringify([{item_id:'white-paper',quantity:2,requested_colour:'Blue'}]),whitePaper,true)[0].requested_colour,'White');
 assert.equal(readRequestLines(JSON.stringify([{item_id:'white-paper',quantity:2}]),whitePaper,true)[0].requested_colour,'White');

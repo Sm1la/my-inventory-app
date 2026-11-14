@@ -1,0 +1,27 @@
+const fs=require('fs'), ts=require('typescript'), assert=require('node:assert/strict');
+const mod={exports:{}};
+new Function('exports',ts.transpileModule(fs.readFileSync('lib/inventory-insights.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText)(mod.exports);
+const {inventoryInsights, matchesStockFilter}=mod.exports;
+const item=(id,extra={})=>({id,code:id,name:id,category:'Stationery',unit:'pcs',balance:10,minimum_stock:5,unit_price:2,expiry_date:null,...extra});
+const items=[item('healthy'),item('low',{balance:5}),item('empty',{balance:0}),item('expired',{category:'Pantry',expiry_date:'2026-11-01'}),item('soon',{category:'Pantry',expiry_date:'2026-12-14'}),item('later',{category:'Pantry',expiry_date:'2026-12-15'}),item('no-stock-expiry',{category:'Pantry',expiry_date:'2026-11-14',balance:0}),item('missing',{unit:'20',unit_price:0}),item('stationery-date',{expiry_date:'2026-11-14'})];
+const move=(id,date,qty=1,kind='issued')=>({item_id:id,transaction_date:date,quantity:qty,kind});
+const movements=[move('healthy','2026-10-16',10),move('healthy','2026-11-13',10),move('healthy','2026-11-14',10),move('low','2026-11-14',100),move('healthy','2026-10-15',1000),move('healthy','2026-11-15',1000),move('healthy','invalid',1000),move('healthy','2026-11-14',1000,'received')];
+const s=inventoryInsights(items,movements,[{status:'Pending',created_at:'2026-11-12T17:00:00Z'},{status:'Pending',created_at:'2026-11-20T00:00:00Z'},{status:'Approved',created_at:'2020-01-01T00:00:00Z'}],'2026-11-14');
+assert.deepEqual(s.out.map(i=>i.id),['empty','no-stock-expiry']);
+assert.deepEqual(s.low.map(i=>i.id),['low']);
+assert.equal(s.healthy,6); assert.equal(s.healthPercent,67);
+assert.deepEqual(s.expiry.map(i=>i.id),['expired','soon']);
+assert.deepEqual(s.missingPrices.map(i=>i.id),['missing']);
+assert.deepEqual(s.unclearUnits.map(i=>i.id),['missing']);
+assert.equal(s.usage[0].item.id,'healthy'); // frequency, not incomparable quantities
+assert.equal(s.usage[0].quantity,30); assert.equal(s.usage[0].events,3);
+assert.equal(s.usage[0].coverDays,10); assert.equal(s.usage[1].coverDays,null);
+assert.equal(s.coverageRisks.length,1); assert.equal(s.pending,2); assert.equal(s.oldestPendingDays,1);
+assert.equal(s.windowStart,'2026-10-16');
+assert.equal(matchesStockFilter(items[2],'low','2026-11-14'),true);
+assert.equal(matchesStockFilter(items[1],'out','2026-11-14'),false);
+assert.equal(matchesStockFilter(items[5],'expiry','2026-11-14'),false);
+const sameDay=inventoryInsights([item('a')],[move('a','2026-11-14'),move('a','2026-11-14'),move('a','2026-11-14')],[],'2026-11-14');
+assert.equal(sameDay.usage[0].coverDays,null);
+assert.equal(inventoryInsights([],[],[],'2026-11-14').healthPercent,0);
+console.log('Inventory insight boundaries, unit isolation, coverage, expiry and approval ages passed.');

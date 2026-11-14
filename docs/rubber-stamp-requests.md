@@ -1,7 +1,7 @@
 Rubber stamp requests
 ====================
 
-In Requests → New request, tick Rubber stamp. Choose Ink pad or Self ink rubber stamp, then enter quantity, size/dimensions and custom specifications (wording, layout, ink colour, shape or other requirements). Existing inventory items and an Other item can be requested in the same submission.
+In Requests → New request, tick Rubber stamp. Choose Ink pad or Self ink rubber stamp, choose Black or Blue ink when requesting a self ink rubber stamp, then enter quantity, size/dimensions and custom specifications (wording, layout, ink colour, shape or other requirements). Existing inventory items and an Other item can be requested in the same submission.
 
 Rubber stamps use the existing unlisted Stationery request flow. Type is saved in other_name; size and custom details are saved in the request's notes, together with any shared notes. Approval and Stationery reorder tables show those specifications; the reorder CSV includes them. No stock changes until a manager links the request to inventory and fulfils it. No database schema change is needed.
 

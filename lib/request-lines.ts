@@ -7,7 +7,7 @@ export type RequestLine = {
   other_category: string | null;
   quantity: number;
   notes?: string;
-  rubber_stamp?: { type: string; size: string; details: string };
+  rubber_stamp?: { type: string; size: string; details: string; colour?: string };
 };
 
 export function requestNotes(line: RequestLine, sharedNotes: string): string {
@@ -41,7 +41,9 @@ export function readRequestLines(value: string, items: ReadonlyArray<{ id: strin
       if (row.item_id !== null || !["Ink pad", "Self ink rubber stamp"].includes(String(stamp.type)) || !size || size.length > 40 || !details || details.length > 300) {
         throw new Error("Choose a rubber stamp type, enter its size (up to 40 characters) and details (up to 300 characters).");
       }
-      return { item_id: null, requested_colour: "", other_name: "Rubber stamp — " + stamp.type, other_brand: "", other_category: "Stationery", quantity: row.quantity, notes: "Size: " + size + "\nStamp details: " + details };
+      const colour = stamp.type === "Self ink rubber stamp" ? stamp.colour : "";
+      if (stamp.type === "Self ink rubber stamp" && colour !== "Black" && colour !== "Blue") throw new Error("Choose Black or Blue for the self ink rubber stamp.");
+      return { item_id: null, requested_colour: "", other_name: "Rubber stamp — " + stamp.type, other_brand: "", other_category: "Stationery", quantity: row.quantity, notes: (colour ? "Ink colour: " + colour + "\n" : "") + "Size: " + size + "\nStamp details: " + details };
     }
     if (row.item_id === null) {
       const name = typeof row.other_name === "string" ? row.other_name.trim() : "";

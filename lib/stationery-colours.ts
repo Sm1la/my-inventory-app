@@ -1,5 +1,5 @@
 export const COLOURS: Record<string, readonly string[]> = {
-  Paper: ["Blue", "Green", "Yellow", "Red", "Other"],
+  Paper: ["White", "Blue", "Green", "Yellow", "Red", "Other"],
   "Ball pen": ["Black", "Blue", "Red"],
   "Marker pen": ["Black", "Red", "Blue", "Green", "Other"],
 };

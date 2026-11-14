@@ -2,6 +2,9 @@ const fs = require('fs'), ts = require('typescript'), assert = require('node:ass
 function load(path, deps={}) { const mod={exports:{}}; const code=ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText; new Function('exports','require',code)(mod.exports,key=>deps[key] ?? require(key)); return mod.exports; }
 const colours=load('lib/stationery-colours.ts');
 assert.equal(colours.stationeryType({name:'A4 Copy Paper (80gsm)',category:'Stationery'}),'Paper');
+assert.equal(colours.defaultColour({name:'A4 Paper (White)',category:'Stationery'}),'White');
+assert.equal(colours.defaultColour({name:'A4 Colour Paper',category:'Stationery'}),'');
+assert.equal(colours.validateColour('Paper','White',true),'White');
 assert.equal(colours.stationeryType({name:'Paper Clips',category:'Stationery'}),'');
 assert.equal(colours.stationeryType({name:'Black Ballpoint Pens',category:'Stationery'}),'Ball pen');
 assert.equal(colours.stationeryType({name:'Whiteboard Markers (Assorted)',category:'Stationery'}),'Marker pen');

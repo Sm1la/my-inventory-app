@@ -26,4 +26,4 @@
 .shell .close{background:#edf1f6;color:#52667f}.shell .request-selection-summary button{color:#a63131}
 .healthy-dot{background:#34805a}.low-dot{background:#d39b32}.out-dot{background:#c44444}.green-symbol{background:#eaf5ef;color:#276444}.blue-symbol{background:#eaf1fa;color:#426a98}
 .health-legend{color:#52657d}.updated-stamp i,.shell .dot{background:#34805a}.shell .status.good,.shell .status.low,.shell .status.bad{font-weight:500}
-.shell .approval-guide,.shell .approval-request{background:#f3f6fa;border-color:#dfe5ed;color:#52657d}.shell .approval-guide span,.shell .approval-request span{color:#627187}.shell .approver-name{background:#edf2f9;color:#365477}
+.shell .approval-guide,.shell .approval-request{background:#f3f6fa;border-color:#dfe5ed;color:#52657d}.shell .approval-guide span,.shell .approval-request span{color:#627187}.shell .approver-name{background:#edf2f9;color:#365477}.shell{color:var(--ink)}

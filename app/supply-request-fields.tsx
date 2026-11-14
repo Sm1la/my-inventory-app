@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import ColourSelect from "./colour-select";
 import ColourChecklist from "./colour-checklist";
+import { paperRequestVariants } from "@/lib/paper-request-group";
 import { COLOURS, stationeryType, defaultColour, fixedColour } from "@/lib/stationery-colours";
 import type { RequestLine } from "@/lib/request-lines";
 
@@ -16,6 +17,7 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
   const [selected, setSelected] = useState<Record<string, string>>(() => initialItemId ? { [initialItemId]: "1" } : {});
   const [colours, setColours] = useState<Record<string,string>>({});
   const [highlighterColours,setHighlighterColours] = useState<Record<string,Record<string,string>>>({});
+  const [paperExpanded,setPaperExpanded] = useState(() => paperRequestVariants(items).some(item => item.id === initialItemId));
   const [otherColour,setOtherColour] = useState("");
   const [other, setOther] = useState(false);
   const [otherName, setOtherName] = useState("");
@@ -30,6 +32,10 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
   const [stampQuantity, setStampQuantity] = useState("1");
   const selectedItems = items.filter(item => selected[item.id] !== undefined);
   const visibleItems = items.filter(item => (category === "All categories" || item.category === category) && [item.name, item.code, item.brand].join(" ").toLowerCase().includes(search.toLowerCase()));
+  const paperVariants = paperRequestVariants(items);
+  const paperIds = new Set(paperVariants.map(item => item.id));
+  const showPaperGroup = visibleItems.some(item => paperIds.has(item.id));
+  const missingPaperColours = paperExpanded && !paperVariants.some(item => selected[item.id] !== undefined);
   const missingHighlighterColours = selectedItems.some(item => stationeryType(item) === "Highlighter" && !Object.keys(highlighterColours[item.id] ?? {}).length);
   const lines: RequestLine[] = selectedItems.flatMap(item => {
     const base = { item_id: item.id, other_name: null, other_brand: "", other_category: null };
@@ -55,13 +61,19 @@ export default function SupplyRequestFields({ requestorIdentity, items, initialC
   }
   return <fieldset disabled={busy} className="request-fields">
     <input type="hidden" name="request_lines" value={JSON.stringify(lines)}/>
-    <input type="hidden" name="request_colour_error" value={missingHighlighterColours ? "Tick at least one colour for each selected highlighter." : ""}/>
+    <input type="hidden" name="request_colour_error" value={missingHighlighterColours ? "Tick at least one colour for each selected highlighter." : missingPaperColours ? "Tick at least one colour for A4 Colour Paper." : ""}/>
     <div className="request-picker-heading"><h3>Choose items</h3><span aria-live="polite">{lines.length} selected</span></div>
     <p className="request-picker-help">Tick the boxes on the right and enter a quantity for each item. Your signed-in account fills the requestor. Choose the department and approver once below.</p>
     <div className="request-picker-filters"><Field label="Category"><select value={category} onChange={event => setCategory(event.target.value)}><option>All categories</option><option>Stationery</option><option>Pantry</option></select></Field><Field label="Search items"><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Item name, code or brand"/></Field></div>
     <div className="request-pick-list" role="group" aria-label="Items to request">
       <div className="request-pick-labels"><span>Item / available stock</span><span>Qty</span><span>Tick</span></div>
-      {visibleItems.map(item => <div className={selected[item.id] !== undefined ? "request-pick-row selected" : "request-pick-row"} key={item.id}>
+      {showPaperGroup && <div className={paperExpanded ? "request-pick-row selected" : "request-pick-row"}>
+        <label htmlFor="request-a4-colour-paper"><strong>A4 Colour Paper</strong><small>Stationery · Tick colours and enter a quantity for each.</small></label>
+        <span className="highlighter-total" aria-label="Total quantity for A4 Colour Paper">{paperVariants.reduce((sum,item) => sum + Number(selected[item.id] || 0),0)}</span>
+        <input id="request-a4-colour-paper" type="checkbox" aria-label="Select A4 Colour Paper" checked={paperExpanded} onChange={event => { setPaperExpanded(event.target.checked); if(!event.target.checked) setSelected(previous => Object.fromEntries(Object.entries(previous).filter(([id]) => !paperIds.has(id)))); }}/>
+        {paperExpanded && <ColourChecklist label="A4 Colour Paper" choices={paperVariants.map(item => fixedColour(item))} values={Object.fromEntries(paperVariants.filter(item => selected[item.id] !== undefined).map(item => [fixedColour(item),selected[item.id]]))} details={Object.fromEntries(paperVariants.map(item => [fixedColour(item),item.balance + " " + item.unit + " available"]))} onChange={(colour,quantity) => { const item=paperVariants.find(item => fixedColour(item) === colour); if(!item) return; if(quantity === null) toggle(item.id,false); else setSelected(previous => ({...previous,[item.id]:quantity})); }}/ >}
+      </div>}
+      {visibleItems.filter(item => !paperIds.has(item.id)).map(item => <div className={selected[item.id] !== undefined ? "request-pick-row selected" : "request-pick-row"} key={item.id}>
         <div><label htmlFor={"request-pick-" + item.id}><strong>{item.name}</strong><small>{item.category}{item.brand ? " · " + item.brand : ""} · {item.balance} {item.unit} available</small></label>{selected[item.id] !== undefined && stationeryType(item) && stationeryType(item) !== "Highlighter" && <ColourSelect fixed={fixedColour(item)} kind={stationeryType(item)} value={colours[item.id] ?? defaultColour(item)} onChange={value => setColours(previous => ({...previous,[item.id]:value}))} label={"Colour for " + item.name} required/>}</div>
         {stationeryType(item) === "Highlighter" ? <span className="highlighter-total" aria-label={"Total quantity for " + item.name}>{Object.values(highlighterColours[item.id] ?? {}).reduce((sum,quantity) => sum + Number(quantity || 0),0)}</span> : <input className="request-line-qty" type="number" min={1} max={10000000} step={1} required={selected[item.id] !== undefined} disabled={selected[item.id] === undefined} aria-label={"Quantity for " + item.name} value={selected[item.id] ?? "1"} onChange={event => setSelected(previous => ({ ...previous, [item.id]: event.target.value }))}/> }
         <input id={"request-pick-" + item.id} type="checkbox" aria-label={"Select " + item.name} checked={selected[item.id] !== undefined} onChange={event => toggle(item.id, event.target.checked)}/>{selected[item.id] !== undefined && stationeryType(item) === "Highlighter" && <ColourChecklist label={item.name} choices={COLOURS.Highlighter} values={highlighterColours[item.id] ?? {}} onChange={(colour,quantity) => setHighlighterQuantity(item.id,colour,quantity)}/>}
